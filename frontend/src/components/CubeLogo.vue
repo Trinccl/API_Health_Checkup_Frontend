@@ -87,7 +87,7 @@ const bottomStyle = computed(() => ({
 </script>
 
 <template>
-  <div class="scene">
+  <div class="scene" :style="{ width: width, height: width }">
     <div class="cube" :style="cubeStyle">
       <div class="face front" :style="frontStyle">
         {{ frontText }}
@@ -156,10 +156,7 @@ const bottomStyle = computed(() => ({
 
 <style scoped>
 .scene {
-  perspective: 800px;
-  width: 200px;
-  height: 200px;
-  margin: 100px auto;
+  margin: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -172,16 +169,18 @@ const bottomStyle = computed(() => ({
 
 .face {
   position: absolute;
-  background: #766767;
+
   border: 2px solid #fff;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  top: 0;
+  left: 0;
+  margin: 0;
   align-items: center;
   font-size: 1.1rem;
   font-weight: bold;
   color: white;
-  border-radius: 5px;
   backface-visibility: visible;
 }
 </style>
