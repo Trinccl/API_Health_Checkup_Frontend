@@ -52,7 +52,7 @@ const askHealth = async () => {
       errorMessage.value =
         "Success: API healthy, response time: " + data.time + " ms";
     } else {
-      errorMessage.value = "Error: " + response.statusText;
+      errorMessage.value = "Error: " + data.message[0];
     }
   } catch (error) {
     errorMessage.value = "Error: " + error.message;
