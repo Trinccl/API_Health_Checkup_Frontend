@@ -54,7 +54,7 @@ async function getApisForUser() {
     if (response.ok) {
       whatthefuck.value = data;
     } else {
-      errorMessage.value = "Error: " + response.statusText;
+      errorMessage.value = "Error: " + data.message[0];
     }
   } catch (error) {
     errorMessage.value = "Error: " + error.message;
