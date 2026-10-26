@@ -45,7 +45,7 @@ const submitReg = async () => {
       const data = await response.json();
 
       if (response.ok) {
-        errorRegMessage.value = "Success: " + JSON.stringify(data);
+        errorRegMessage.value = "Successfully created a user";
         regForm.value = {
           email: "",
           name: "",
@@ -79,7 +79,7 @@ const submitLogin = async () => {
     const data = await response.json();
 
     if (response.ok) {
-      errorLogMessage.value = "Success: " + JSON.stringify(data);
+      errorLogMessage.value = "";
       localStorage.setItem("JWT", data.accessToken);
       router.push("/dashboard");
     } else {
@@ -88,6 +88,10 @@ const submitLogin = async () => {
   } catch (error) {
     errorLogMessage.value = "Error: " + error.message;
   }
+};
+
+const clearStorage = () => {
+  localStorage.clear();
 };
 </script>
 
@@ -181,7 +185,7 @@ const submitLogin = async () => {
             Cron based URL/api health check. Add urls, schedule checks, display
             stats in dashboard, send alerts if conditions met.
           </p>
-          <v-btn @click="localStorage.clear()">Clear localStorage (TBD)</v-btn>
+          <v-btn @click="clearStorage">Clear localStorage (TBD)</v-btn>
         </div>
       </v-col>
     </v-row>
