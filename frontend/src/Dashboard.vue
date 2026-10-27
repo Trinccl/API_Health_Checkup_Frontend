@@ -10,32 +10,40 @@ const thresholdInput = ref("");
 const errorThresholdInput = ref("");
 const requestMethodInput = ref("");
 const intervalMinutesInput = ref("");
-const whatthefuck = ref([]);
+const ApiData = ref([]);
+const isLoading = ref(true);
 
 async function checkif() {
+  isLoading.value = true;
   jwt.value = localStorage.getItem("JWT");
-  if (jwt.value) {
-    try {
-      const response = await fetch("http://localhost:3000/auth/checkToken", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt.value}`,
-        },
-      });
 
-      const data = await response.json();
+  if (!jwt.value) {
+    isJwt.value = false;
+    isLoading.value = false;
+    return;
+  }
 
-      if (response.ok) {
-        isJwt.value = true;
-      } else {
-        isJwt.value = false;
-        errorMessage.value = "Error: " + response.statusText;
-      }
-    } catch (error) {
+  try {
+    const response = await fetch("http://localhost:3000/auth/checkToken", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt.value}`,
+      },
+    });
+
+    if (response.ok) {
+      isJwt.value = true;
+      getApisForUser();
+    } else {
       isJwt.value = false;
-      errorMessage.value = "Network Error: " + error.message;
+      errorMessage.value = "Error: " + response.statusText;
     }
+  } catch (error) {
+    isJwt.value = false;
+    errorMessage.value = "Network Error: " + error.message;
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -52,9 +60,9 @@ async function getApisForUser() {
     const data = await response.json();
 
     if (response.ok) {
-      whatthefuck.value = data;
+      ApiData.value = data;
     } else {
-      errorMessage.value = "Error: " + data.message[0];
+      errorMessage.value = "Error: " + data.message;
     }
   } catch (error) {
     errorMessage.value = "Error: " + error.message;
@@ -71,7 +79,7 @@ const addAskHealthAPI = async () => {
       },
       body: JSON.stringify({
         name: nameInput.value,
-        url: urlInput.value,
+        url: urlInput.value.replace(/\/+$/, ""),
         slowThresholdMs: Number(thresholdInput.value),
         errorsToAlert: Number(errorThresholdInput.value),
         requestMethod: requestMethodInput.value,
@@ -94,12 +102,18 @@ const addAskHealthAPI = async () => {
 
 onMounted(() => {
   checkif();
-  getApisForUser();
 });
 </script>
 
 <template>
-  <v-container fluid class="pa-4" v-if="isJwt">
+  <v-container
+    fluid
+    class="pa-4 d-flex align-center justify-center"
+    v-if="isLoading"
+  >
+    <v-progress-circular indeterminate color="primary"></v-progress-circular>
+  </v-container>
+  <v-container fluid class="pa-4" v-else-if="isJwt">
     <v-row cols="12">
       <v-col md="6" class="border-thin rounded">
         <v-form @submit.prevent="addAskHealthAPI" class="pa-3 w-100 mt-3">
@@ -155,7 +169,7 @@ onMounted(() => {
 
           <v-select
             v-model="requestMethodInput"
-            :items="['GET', 'POST', 'PUT', 'DELETE', 'PATCH']"
+            :items="['GET', 'POST']"
             label="Request Method"
             variant="outlined"
             density="comfortable"
@@ -171,11 +185,9 @@ onMounted(() => {
 
       <v-col md="6">
         <div class="pa-4">
-          <h2>Simple health check</h2>
-          <p>more TBA</p>
           <div
             class="border-thin rounded pa-4 d-flex flex-column justify-space-between mb-3"
-            v-for="api in whatthefuck"
+            v-for="api in ApiData"
             :key="api.id"
           >
             <div class="border-b-thin d-flex">
@@ -183,9 +195,9 @@ onMounted(() => {
                 Name:
                 <b>{{ api.name }}</b>
               </p>
-              <v-btn size="small" color="primary" class="ma-3 pa-4"
-                >Action</v-btn
-              >
+              <v-btn size="small" color="primary" :to="`/dashboard/${api.id}`">
+                Details
+              </v-btn>
             </div>
 
             <div class="d-flex">
@@ -197,11 +209,7 @@ onMounted(() => {
       </v-col>
     </v-row>
   </v-container>
-  <v-container
-    fluid
-    class="pa-4 d-flex align-center justify-center"
-    v-if="!isJwt"
-  >
+  <v-container fluid class="pa-4 d-flex align-center justify-center" v-else>
     <h1>Unauthorized Entry</h1>
   </v-container>
 </template>
