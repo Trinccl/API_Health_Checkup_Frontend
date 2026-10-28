@@ -190,19 +190,24 @@ onMounted(() => {
             v-for="api in ApiData"
             :key="api.id"
           >
-            <div class="border-b-thin d-flex">
+            <div class="border-b-thin d-flex pa-2">
               <p class="ms-3 flex-grow-1">
                 Name:
                 <b>{{ api.name }}</b>
               </p>
-              <v-btn size="small" color="primary" :to="`/dashboard/${api.id}`">
+              <v-btn
+                size="small"
+                color="primary"
+                class="me-3"
+                :to="`/dashboard/${api.id}`"
+              >
                 Details
               </v-btn>
             </div>
 
-            <div class="d-flex">
+            <div class="d-flex pa-2 mt-2">
               <p class="ms-3 flex-grow-1">URL: {{ api.url }}</p>
-              <p class="">Status: {{ api.status }}</p>
+              <p class="me-3">Status: {{ api.status }}</p>
             </div>
           </div>
         </div>

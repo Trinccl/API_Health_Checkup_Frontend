@@ -26,7 +26,9 @@ const widthVal = ref(50);
           :appleMode="appleModeCheck"
           :width="widthVal"
         />
-        <h1>API Health Checkup</h1>
+        <h1 class="text-headline-large pa-3 font-weight-bold">
+          API Health Checkup
+        </h1>
       </nav>
       <RouterView />
     </v-main>

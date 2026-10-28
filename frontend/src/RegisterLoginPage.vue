@@ -100,7 +100,7 @@ const clearStorage = () => {
     <v-row cols="12">
       <v-col md="6" class="border-thin rounded">
         <div class="pa-4 border-b-thin">
-          <h2>Login</h2>
+          <h2 class="text-headline-large pa-3">Login</h2>
           <hr />
           <v-form @submit.prevent="submitLogin" class="pa-3 w-100 mt-3">
             <v-text-field
@@ -130,7 +130,7 @@ const clearStorage = () => {
         </div>
 
         <div class="pa-4">
-          <h2>Register</h2>
+          <h2 class="text-headline-large pa-3">Register</h2>
           <hr />
           <v-form @submit.prevent="submitReg" class="pa-3 w-100 mt-3">
             <v-text-field
@@ -180,8 +180,8 @@ const clearStorage = () => {
 
       <v-col md="6">
         <div class="pa-4">
-          <h3>About</h3>
-          <p>
+          <h3 class="text-headline-small pb-2">About</h3>
+          <p class="pb-2">
             Cron based URL/api health check. Add urls, schedule checks, display
             stats in dashboard, send alerts if conditions met.
           </p>
