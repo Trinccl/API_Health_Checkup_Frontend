@@ -24,7 +24,7 @@ const template = (d) =>
 </script>
 
 <template>
-  <ChartContainer :config="props.config" cursor>
+  <ChartContainer :config="props.config" cursor v-if="data.length >= 2">
     <VisXYContainer :data="props.data">
       <template v-for="(c, i) in props.categories" :key="c">
         <VisArea :x="x" :y="y" :color="colors[i]" :opacity="0.25" />

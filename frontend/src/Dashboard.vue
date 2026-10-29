@@ -12,6 +12,8 @@ const requestMethodInput = ref("");
 const intervalMinutesInput = ref("");
 const ApiData = ref([]);
 const isLoading = ref(true);
+const sendOnSlow = ref(true);
+const sendOnDown = ref(true);
 
 async function checkif() {
   isLoading.value = true;
@@ -84,13 +86,15 @@ const addAskHealthAPI = async () => {
         errorsToAlert: Number(errorThresholdInput.value),
         requestMethod: requestMethodInput.value,
         intervalMinutes: Number(intervalMinutesInput.value),
+        alertOnDown: sendOnDown.value,
+        alertOnSlow: sendOnSlow.value,
       }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      errorMessage.value = "Success: " + data.successMessage;
+      errorMessage.value = "Success";
       getApisForUser();
     } else {
       errorMessage.value = "Error: " + data.message;
@@ -169,18 +173,39 @@ onMounted(() => {
 
           <v-select
             v-model="requestMethodInput"
-            :items="['GET', 'POST']"
+            :items="[
+              'GET',
+              'POST',
+              'PUT',
+              'PATCH',
+              'DELETE',
+              'OPTIONS',
+              'HEAD',
+            ]"
             label="Request Method"
             variant="outlined"
             density="comfortable"
             class="mb-2"
           ></v-select>
-
+          <v-row cols="12">
+            <v-col md="6">
+              <v-checkbox
+                v-model="sendOnSlow"
+                label="Send mail alert on Slow API status"
+              ></v-checkbox
+            ></v-col>
+            <v-col md="6">
+              <v-checkbox
+                v-model="sendOnDown"
+                label="Send mail alert on Down API status"
+              ></v-checkbox>
+            </v-col>
+          </v-row>
           <v-btn type="submit" color="primary" block class="mt-3">
             Submit
           </v-btn>
         </v-form>
-        <p class="ms-6">{{ errorMessage }}</p>
+        <p class="ma-6 text-align-center">{{ errorMessage }}</p>
       </v-col>
 
       <v-col md="6">
