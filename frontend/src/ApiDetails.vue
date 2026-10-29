@@ -1,4 +1,5 @@
 <script setup>
+import router from "./router.js";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import ApiAreaChart from "@/components/ApiAreaChart.vue";
@@ -38,8 +39,7 @@ async function checkif() {
     });
 
     if (response.ok) {
-      getApi();
-      getApiLogs();
+      refresh();
       isJwt.value = true;
     } else {
       isJwt.value = false;
@@ -121,14 +121,41 @@ async function getApiLogs() {
   }
 }
 
+async function deleteApi() {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/checker/apis/${route.params.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt.value}`,
+        },
+      },
+    );
+
+    router.push("/dashboard");
+  } catch (error) {
+    errorMessage.value = "Error: " + error.message;
+  }
+}
+
 onMounted(() => {
   checkif();
 });
 
-setTimeout(() => {
+let active = true;
+let timer;
+
+async function refresh() {
   getApi();
   getApiLogs();
-}, 60000);
+}
+
+onUnmounted(() => {
+  active = false;
+  clearTimeout(timer);
+});
 </script>
 
 <template>
@@ -168,7 +195,7 @@ setTimeout(() => {
           :categories="['responseTimeMs']"
           :config="chartConfig"
           class="h-[300px]"
-          v-if="LogsData"
+          v-if="LogsData?.items.length"
         />
       </v-col>
 
@@ -194,6 +221,9 @@ setTimeout(() => {
             <p v-if="log.error" class="me-3">{{ log.error }}</p>
           </div>
         </div>
+        <v-btn color="primary" class="mt-3 align-self-end" @click="deleteApi">
+          Delete API
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>
