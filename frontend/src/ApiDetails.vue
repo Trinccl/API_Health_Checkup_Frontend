@@ -225,7 +225,8 @@ function scheduleRefresh() {
 }
 
 async function refresh() {
-  await Promise.all([getApi(), getApiLogs()]);
+  await getApi();
+  await getApiLogs();
   scheduleRefresh();
 }
 
@@ -244,6 +245,9 @@ onUnmounted(() => {
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
   <v-container fluid class="pa-4" v-else-if="isJwt">
+    <v-btn size="small" color="primary" class="mb-3" :to="`/dashboard`">
+      Return to dashboard
+    </v-btn>
     <v-row cols="12">
       <v-col md="6">
         <v-form @submit.prevent="submitPatch" class="mb-[40px]">
@@ -341,7 +345,10 @@ onUnmounted(() => {
               ></v-checkbox>
             </div>
           </div>
-          <div class="d-flex justify-end mt-3">
+          <div class="d-flex justify-end align-center mt-3">
+            <p class="me-6 text-align-center d-inline">
+              {{ errorMessage }}
+            </p>
             <v-btn type="submit" color="primary">Submit new Data</v-btn>
           </div>
         </v-form>
@@ -369,7 +376,9 @@ onUnmounted(() => {
               Status:
               <b>{{ log.status }}</b>
             </p>
-            <p class="me-3">Response time: {{ log.responseTimeMs }}ms</p>
+            <p class="me-3">
+              Response time: {{ Math.round(log.responseTimeMs * 100) / 100 }}ms
+            </p>
           </div>
 
           <div class="d-flex mt-2 pa-2">

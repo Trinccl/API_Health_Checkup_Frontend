@@ -27,7 +27,7 @@ const widthVal = ref(50);
           :width="widthVal"
         />
         <h1 class="text-headline-large pa-3 font-weight-bold">
-          API Health Checkup
+          <a href="/"> API Health Checkup </a>
         </h1>
       </nav>
       <RouterView />

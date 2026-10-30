@@ -95,7 +95,7 @@ const addAskHealthAPI = async () => {
 
     if (response.ok) {
       errorMessage.value = "Success";
-      getApisForUser();
+      setTimeout(getApisForUser, 1000);
     } else {
       errorMessage.value = "Error: " + data.message;
     }
