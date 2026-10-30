@@ -169,10 +169,13 @@ async function submitPatch() {
         body: JSON.stringify({
           name: ApiData.value.name,
           url: ApiData.value.url,
-          slowThresholdMs: Number(thresholdInput.value),
-          errorsToAlert: Number(errorThresholdInput.value),
+          slowThresholdMs:
+            Number(thresholdInput.value) || ApiData.value.slowThresholdMs,
+          errorsToAlert:
+            Number(errorThresholdInput.value) || ApiData.value.errorsToAlertt,
           requestMethod: ApiData.value.requestMethod,
-          intervalMinutes: Number(intervalMinutesInput.value),
+          intervalMinutes:
+            Number(intervalMinutesInput.value) || ApiData.value.intervalMinutes,
           alertOnDown: sendOnDown.value,
           alertOnSlow: sendOnSlow.value,
         }),
