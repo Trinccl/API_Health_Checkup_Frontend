@@ -55,19 +55,12 @@ async function checkif() {
   }
 }
 
-let bodiesLoaded = false;
-
 async function loadApi() {
   try {
     const data = await getApi(route.params.id);
     ApiData.value = data;
     sendOnDown.value = data.alertOnDown;
     sendOnSlow.value = data.alertOnSlow;
-    if (!bodiesLoaded) {
-      reqBodyInput.value = data.requestBody ?? "";
-      expectedBodyInput.value = data.expectedBody ?? "";
-      bodiesLoaded = true;
-    }
     isJwt.value = true;
   } catch {}
 }
@@ -89,20 +82,25 @@ async function refresh() {
 
 async function submitPatch() {
   try {
-    await updateApi(route.params.id, ApiData.value, {
-      slowThresholdMs: thresholdInput.value,
-      errorsToAlert: errorThresholdInput.value,
-      intervalMinutes: intervalMinutesInput.value,
+    await updateApi(route.params.id, {
+      name: ApiData.value.name,
+      url: ApiData.value.url,
+      requestMethod: ApiData.value.requestMethod,
+      slowThresholdMs: thresholdInput.value || ApiData.value.slowThresholdMs,
+      errorsToAlert: errorThresholdInput.value || ApiData.value.errorsToAlert,
+      intervalMinutes:
+        intervalMinutesInput.value || ApiData.value.intervalMinutes,
       alertOnDown: sendOnDown.value,
       alertOnSlow: sendOnSlow.value,
-      requestBody: reqBodyInput.value,
-      expectedBody: expectedBodyInput.value,
+      requestBody: reqBodyInput.value || ApiData.value.requestBody,
+      expectedBody: expectedBodyInput.value || ApiData.value.expectedBody,
     });
     refresh();
     thresholdInput.value = "";
     errorThresholdInput.value = "";
     intervalMinutesInput.value = "";
-
+    expectedBodyInput.value = "";
+    reqBodyInput.value = "";
     notify("Successfully modified data!", "success", "$success");
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");

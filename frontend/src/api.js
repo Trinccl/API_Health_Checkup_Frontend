@@ -104,22 +104,20 @@ export function createApi(form) {
   });
 }
 
-export function updateApi(id, current, changes = {}) {
+export function updateApi(id, changes = {}) {
   return request(`/checker/apis/${id}`, {
     method: "PATCH",
     body: {
-      name: current.name,
-      url: current.url,
-      slowThresholdMs:
-        Number(changes.slowThresholdMs) || current.slowThresholdMs,
-      errorsToAlert: Number(changes.errorsToAlert) || current.errorsToAlert,
-      requestMethod: current.requestMethod,
-      intervalMinutes:
-        Number(changes.intervalMinutes) || current.intervalMinutes,
-      alertOnDown: changes.alertOnDown ?? current.alertOnDown,
-      alertOnSlow: changes.alertOnSlow ?? current.alertOnSlow,
-      requestBody: changes.requestBody ?? current.requestBody,
-      expectedBody: changes.expectedBody ?? current.expectedBody,
+      name: changes.name,
+      url: changes.url,
+      slowThresholdMs: Number(changes.slowThresholdMs),
+      errorsToAlert: Number(changes.errorsToAlert),
+      requestMethod: changes.requestMethod,
+      intervalMinutes: Number(changes.intervalMinutes),
+      alertOnDown: changes.alertOnDown,
+      alertOnSlow: changes.alertOnSlow,
+      requestBody: changes.requestBody,
+      expectedBody: changes.expectedBody,
     },
   });
 }
