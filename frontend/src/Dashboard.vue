@@ -1,112 +1,76 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, inject, computed, watch } from "vue";
+import { checkToken, getApis, createApi } from "./api.js";
 
-const jwt = ref(localStorage.getItem("JWT"));
+const notify = inject("notify");
 const isJwt = ref(false);
-const errorMessage = ref("");
+const isLoading = ref(true);
+const ApiData = ref([]);
+
 const urlInput = ref("");
 const nameInput = ref("");
+const reqBodyInput = ref("");
+const expectedBodyInput = ref("");
 const thresholdInput = ref("");
 const errorThresholdInput = ref("");
 const requestMethodInput = ref("");
 const intervalMinutesInput = ref("");
-const ApiData = ref([]);
-const isLoading = ref(true);
 const sendOnSlow = ref(true);
 const sendOnDown = ref(true);
 
+const noRequestBody = computed(() =>
+  ["GET", "HEAD"].includes(requestMethodInput.value),
+);
+const noExpectedBody = computed(() => requestMethodInput.value === "HEAD");
+
+watch(requestMethodInput, () => {
+  if (noRequestBody.value) reqBodyInput.value = "";
+  if (noExpectedBody.value) expectedBodyInput.value = "";
+});
+
 async function checkif() {
   isLoading.value = true;
-  jwt.value = localStorage.getItem("JWT");
-
-  if (!jwt.value) {
-    isJwt.value = false;
-    isLoading.value = false;
-    return;
-  }
-
   try {
-    const response = await fetch("http://localhost:3000/auth/checkToken", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt.value}`,
-      },
-    });
-
-    if (response.ok) {
-      isJwt.value = true;
-      getApisForUser();
-    } else {
-      isJwt.value = false;
-      errorMessage.value = "Error: " + response.statusText;
-    }
+    isJwt.value = await checkToken();
+    if (isJwt.value) await loadApis();
   } catch (error) {
     isJwt.value = false;
-    errorMessage.value = "Network Error: " + error.message;
+    notify("Error: " + error.message, "error", "mdi-cancel");
   } finally {
     isLoading.value = false;
   }
 }
 
-async function getApisForUser() {
+async function loadApis() {
   try {
-    const response = await fetch("http://localhost:3000/checker/apis", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt.value}`,
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      ApiData.value = data;
-    } else {
-      errorMessage.value = "Error: " + data.message;
-    }
+    ApiData.value = await getApis();
   } catch (error) {
-    errorMessage.value = "Error: " + error.message;
+    notify("Error: " + error.message, "error", "mdi-cancel");
   }
 }
 
 const addAskHealthAPI = async () => {
   try {
-    const response = await fetch("http://localhost:3000/checker/apis", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt.value}`,
-      },
-      body: JSON.stringify({
-        name: nameInput.value,
-        url: urlInput.value.replace(/\/+$/, ""),
-        slowThresholdMs: Number(thresholdInput.value),
-        errorsToAlert: Number(errorThresholdInput.value),
-        requestMethod: requestMethodInput.value,
-        intervalMinutes: Number(intervalMinutesInput.value),
-        alertOnDown: sendOnDown.value,
-        alertOnSlow: sendOnSlow.value,
-      }),
+    await createApi({
+      name: nameInput.value,
+      url: urlInput.value,
+      slowThresholdMs: thresholdInput.value,
+      errorsToAlert: errorThresholdInput.value,
+      requestMethod: requestMethodInput.value,
+      intervalMinutes: intervalMinutesInput.value,
+      alertOnDown: sendOnDown.value,
+      alertOnSlow: sendOnSlow.value,
+      requestBody: reqBodyInput.value,
+      expectedBody: expectedBodyInput.value,
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      errorMessage.value = "Success";
-      setTimeout(getApisForUser, 1000);
-    } else {
-      errorMessage.value = "Error: " + data.message;
-    }
+    notify("Success!", "success", "$success");
+    setTimeout(loadApis, 1000);
   } catch (error) {
-    errorMessage.value = "Error: " + error.message;
+    notify("Error: " + error.message, "error", "mdi-cancel");
   }
 };
 
-onMounted(() => {
-  checkif();
-});
+onMounted(checkif);
 </script>
 
 <template>
@@ -171,6 +135,28 @@ onMounted(() => {
             class="mb-2"
           ></v-text-field>
 
+          <v-text-field
+            v-model="reqBodyInput"
+            label="Request Body (optional)"
+            type="text"
+            placeholder="JSON or plainText"
+            variant="outlined"
+            density="comfortable"
+            class="mb-2"
+            :disabled="noRequestBody"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="expectedBodyInput"
+            label="Expected Body (optional)"
+            type="text"
+            placeholder="JSON or plainText"
+            variant="outlined"
+            density="comfortable"
+            class="mb-2"
+            :disabled="noExpectedBody"
+          ></v-text-field>
+
           <v-select
             v-model="requestMethodInput"
             :items="[
@@ -205,7 +191,6 @@ onMounted(() => {
             Submit
           </v-btn>
         </v-form>
-        <p class="ma-6 text-align-center">{{ errorMessage }}</p>
       </v-col>
 
       <v-col md="6">
