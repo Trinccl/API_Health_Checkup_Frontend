@@ -3,12 +3,15 @@ import router from "./router.js";
 import { onMounted, onUnmounted, ref, inject } from "vue";
 import { useRoute } from "vue-router";
 import ApiAreaChart from "@/components/ApiAreaChart.vue";
+import ApiStatsDonut from "@/components/ApiStatsDonut.vue";
 import {
   checkToken,
   getApi,
   getApiLogs,
-  updateApi,
   deleteApi,
+  pauseApi,
+  resumeApi,
+  isApiPaused,
   createRefreshScheduler,
 } from "./api.js";
 
@@ -20,19 +23,16 @@ const isLoading = ref(true);
 const ApiData = ref(null);
 const LogsData = ref(null);
 const chartData = ref(null);
-
-const thresholdInput = ref("");
-const errorThresholdInput = ref("");
-const intervalMinutesInput = ref("");
-const sendOnSlow = ref(true);
-const sendOnDown = ref(true);
-const reqBodyInput = ref("");
-const expectedBodyInput = ref("");
+const statsRef = ref(null);
 
 const chartConfig = {
   responseTimeMs: {
     label: "Response Time",
     color: "var(--chart-2)",
+  },
+  slowThresholdMs: {
+    label: "Slow API Threshold",
+    color: "var(--destructive)",
   },
 };
 
@@ -59,8 +59,6 @@ async function loadApi() {
   try {
     const data = await getApi(route.params.id);
     ApiData.value = data;
-    sendOnDown.value = data.alertOnDown;
-    sendOnSlow.value = data.alertOnSlow;
     isJwt.value = true;
   } catch {}
 }
@@ -76,34 +74,27 @@ async function loadLogs() {
 
 async function refresh() {
   await loadApi();
-  await loadLogs();
+  await Promise.all([loadLogs(), statsRef.value?.refresh()]);
   scheduler.schedule();
 }
 
-async function submitPatch() {
+const isToggling = ref(false);
+
+async function handleTogglePause() {
+  isToggling.value = true;
+  const pausing = !isApiPaused(ApiData.value);
   try {
-    await updateApi(route.params.id, {
-      name: ApiData.value.name,
-      url: ApiData.value.url,
-      requestMethod: ApiData.value.requestMethod,
-      slowThresholdMs: thresholdInput.value || ApiData.value.slowThresholdMs,
-      errorsToAlert: errorThresholdInput.value || ApiData.value.errorsToAlert,
-      intervalMinutes:
-        intervalMinutesInput.value || ApiData.value.intervalMinutes,
-      alertOnDown: sendOnDown.value,
-      alertOnSlow: sendOnSlow.value,
-      requestBody: reqBodyInput.value || ApiData.value.requestBody,
-      expectedBody: expectedBodyInput.value || ApiData.value.expectedBody,
-    });
-    refresh();
-    thresholdInput.value = "";
-    errorThresholdInput.value = "";
-    intervalMinutesInput.value = "";
-    expectedBodyInput.value = "";
-    reqBodyInput.value = "";
-    notify("Successfully modified data!", "success", "$success");
+    await (pausing ? pauseApi(route.params.id) : resumeApi(route.params.id));
+    notify(
+      `${pausing ? "Paused" : "Resumed"} checks for: ${ApiData.value.url}`,
+      "success",
+      "$success",
+    );
+    await refresh();
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
+  } finally {
+    isToggling.value = false;
   }
 }
 
@@ -139,137 +130,89 @@ onUnmounted(scheduler.stop);
       Return to dashboard
     </v-btn>
     <v-row cols="12">
-      <v-col md="6">
-        <v-form @submit.prevent="submitPatch" class="mb-[40px]">
-          <div class="border-thin rounded">
-            <div class="d-flex align-center border-b-thin font-weight-bold">
-              <p class="pa-3 flex-grow-1">Name: {{ ApiData?.name }}</p>
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 flex-grow-1">Url: {{ ApiData?.url }}</p>
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Slow API Threshold: {{ ApiData?.slowThresholdMs }}ms
-              </p>
-              <v-text-field
-                v-model.number="thresholdInput"
-                label="New slow Response Threshold (Ms)"
-                type="number"
-                variant="plain"
-                density="compact"
-                single-line
-                hide-details
-                class="inline-field w-50 px-3"
-              ></v-text-field>
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Errors in a row until alert: {{ ApiData?.errorsToAlert }}
-              </p>
-              <v-text-field
-                v-model.number="errorThresholdInput"
-                label="New errors in a row until alert"
-                type="number"
-                variant="plain"
-                density="compact"
-                single-line
-                hide-details
-                class="inline-field w-50 px-3"
-              ></v-text-field>
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 flex-grow-1">
-                Request method: {{ ApiData?.requestMethod }}
-              </p>
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Interval between health checks:
-                {{ ApiData?.intervalMinutes }} minutes
-              </p>
-              <v-text-field
-                v-model.number="intervalMinutesInput"
-                label="New interval between health checks"
-                type="number"
-                variant="plain"
-                density="compact"
-                single-line
-                hide-details
-                class="inline-field w-50 px-3"
-              />
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 flex-grow-1">Status: {{ ApiData?.status }}</p>
-            </div>
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Request body:
-                {{ ApiData?.requestBody }}
-              </p>
-              <v-text-field
-                v-model="reqBodyInput"
-                label="New request body:"
-                type="text"
-                variant="plain"
-                density="compact"
-                hide-details
-                class="inline-field w-50 px-3"
-                v-if="!['GET', 'HEAD'].includes(ApiData?.requestMethod)"
-              />
-            </div>
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Expected body:
-                {{ ApiData?.expectedBody }}
-              </p>
-              <v-text-field
-                v-model="expectedBodyInput"
-                label="New expected body"
-                type="text"
-                variant="plain"
-                density="compact"
-                hide-details
-                class="inline-field w-50 px-3"
-                v-if="ApiData?.requestMethod != 'HEAD'"
-              />
-            </div>
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Send alert on Slow: {{ ApiData?.alertOnSlow ? "Yes" : "No" }}
-              </p>
-              <v-checkbox
-                v-model="sendOnSlow"
-                label="Send mail alert on Slow API status"
-                density="compact"
-                hide-details
-                class="inline-checkbox w-50 px-3"
-              ></v-checkbox>
-            </div>
-
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
-                Send alert on Down: {{ ApiData?.alertOnDown ? "Yes" : "No" }}
-              </p>
-              <v-checkbox
-                v-model="sendOnDown"
-                label="Send mail alert on Down API status"
-                density="compact"
-                hide-details
-                class="inline-checkbox w-50 px-3"
-              ></v-checkbox>
-            </div>
+      <v-col cols="12" md="6">
+        <div class="border-thin rounded">
+          <div class="d-flex align-center border-b-thin font-weight-bold">
+            <p class="pa-3 flex-grow-1">Name: {{ ApiData?.name }}</p>
           </div>
-          <div class="d-flex justify-end align-center mt-3">
-            <v-btn type="submit" color="primary">Submit new Data</v-btn>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">Url: {{ ApiData?.url }}</p>
           </div>
-        </v-form>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Slow API Threshold: {{ ApiData?.slowThresholdMs }}ms
+            </p>
+          </div>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Errors in a row until alert: {{ ApiData?.errorsToAlert }}
+            </p>
+          </div>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Request method: {{ ApiData?.requestMethod }}
+            </p>
+          </div>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Interval between health checks:
+              {{ ApiData?.intervalMinutes }} minutes
+            </p>
+          </div>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">Status: {{ ApiData?.status }}</p>
+          </div>
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Request body: {{ ApiData?.requestBody }}
+            </p>
+          </div>
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Expected body: {{ ApiData?.expectedBody }}
+            </p>
+          </div>
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Send alert on Slow: {{ ApiData?.alertOnSlow ? "Yes" : "No" }}
+            </p>
+          </div>
+
+          <div class="d-flex align-center border-b-thin">
+            <p class="pa-3 flex-grow-1">
+              Send alert on Down: {{ ApiData?.alertOnDown ? "Yes" : "No" }}
+            </p>
+          </div>
+        </div>
+        <div class="d-flex mt-3">
+          <v-btn
+            color="primary"
+            class="me-3"
+            :to="`/dashboard/${route.params.id}/edit`"
+          >
+            Edit
+          </v-btn>
+          <v-btn
+            class="me-3"
+            variant="outlined"
+            :prepend-icon="isApiPaused(ApiData) ? 'mdi-play' : 'mdi-pause'"
+            :loading="isToggling"
+            @click="handleTogglePause"
+          >
+            {{ isApiPaused(ApiData) ? "Resume checks" : "Pause checks" }}
+          </v-btn>
+          <v-btn color="error" @click="handleDelete">Delete API</v-btn>
+        </div>
+        <ApiStatsDonut ref="statsRef" :api-id="route.params.id" class="mt-4" />
+      </v-col>
+
+      <v-col cols="12" md="6">
         <ApiAreaChart
           show-y-axis
           y-label="Response time (ms)"
@@ -277,12 +220,10 @@ onUnmounted(scheduler.stop);
           index="createdAt"
           :categories="['responseTimeMs']"
           :config="chartConfig"
-          class="h-[300px]"
+          :threshold="ApiData?.slowThresholdMs"
+          class="h-[300px] mb-4"
           v-if="LogsData?.items.length"
         />
-      </v-col>
-
-      <v-col md="6">
         <div
           class="border-thin rounded pa-4 d-flex flex-column justify-space-between mb-3"
           v-for="log in LogsData?.items.slice(
@@ -306,13 +247,6 @@ onUnmounted(scheduler.stop);
             <p v-if="log.error" class="me-3">{{ log.error }}</p>
           </div>
         </div>
-        <v-btn
-          color="primary"
-          class="mt-3 align-self-end"
-          @click="handleDelete"
-        >
-          Delete API
-        </v-btn>
       </v-col>
     </v-row>
   </v-container>

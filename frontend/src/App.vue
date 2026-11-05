@@ -76,6 +76,22 @@ function handleLogout() {
         <v-spacer />
 
         <v-btn
+          color="primary"
+          variant="text"
+          class="mr-3"
+          :to="`/dashboard`"
+        >
+          Dashboard
+        </v-btn>
+        <v-btn
+          color="primary"
+          variant="text"
+          class="mr-3"
+          :to="`/dashboard/create`"
+        >
+          Add API
+        </v-btn>
+        <v-btn
           v-if="isLoggedIn"
           variant="text"
           prepend-icon="mdi-logout"

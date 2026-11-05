@@ -15,11 +15,23 @@ const props = defineProps({
   config: { type: Object, required: true },
   showYAxis: { type: Boolean, default: false },
   yLabel: { type: String, default: "" },
+  threshold: { type: Number, default: null },
 });
 
 const x = (_, i) => i;
 const y = (d) => Number(d.responseTimeMs);
 const colors = ["teal"];
+
+// Vuetify's `--v-theme-error` holds a bare "r,g,b" triplet, so using it as
+// `var(--v-theme-error)` is an invalid colour and the line silently falls back
+// to the default. Use the shadcn token, which is a complete colour value.
+const THRESHOLD_COLOR = "var(--destructive)";
+
+const thresholdValue = computed(() => {
+  const n = Number(props.threshold);
+  return Number.isFinite(n) && n > 0 ? n : null;
+});
+const thresholdY = () => thresholdValue.value;
 
 const template = (d) =>
   `<pre style="background-color:teal; padding:5px; color:white; border-radius:5px;">Check date: ${d.createdAt}\nResponse Time: ${Math.round(d.responseTimeMs * 100) / 100}ms\nStatus: ${d.status}</pre>`;
@@ -35,9 +47,15 @@ const dataMax = computed(() =>
   Math.max(...props.data.map((d) => Number(d.responseTimeMs)), 0),
 );
 
-const yStep = computed(() => niceStep(dataMax.value / 4));
+// The scale must cover BOTH the data and the threshold line. Derive the tick
+// step from that combined top value; otherwise a threshold far above the data
+// produces a tiny step and hundreds of ticks, squashing the real series.
+const scaleTop = computed(() =>
+  Math.max(dataMax.value, thresholdValue.value ?? 0),
+);
+const yStep = computed(() => niceStep(scaleTop.value / 4));
 const yMax = computed(
-  () => Math.ceil(dataMax.value / yStep.value) * yStep.value || yStep.value,
+  () => Math.ceil(scaleTop.value / yStep.value) * yStep.value || yStep.value,
 );
 const yTicks = computed(() =>
   Array.from(
@@ -58,6 +76,14 @@ const yTicks = computed(() =>
         <VisArea :x="x" :y="y" :color="colors[i]" :opacity="0.25" />
         <VisLine :x="x" :y="y" :color="colors[i]" />
       </template>
+      <VisLine
+        v-if="thresholdValue"
+        :x="x"
+        :y="thresholdY"
+        :color="THRESHOLD_COLOR"
+        :line-dash-array="[6, 4]"
+        :exclude-from-domain-calculation="true"
+      />
       <VisAxis
         type="x"
         :x="x"

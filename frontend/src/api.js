@@ -126,6 +126,32 @@ export function deleteApi(id) {
   return request(`/checker/apis/${id}`, { method: "DELETE" });
 }
 
+export function getApiStats(id) {
+  return request(`/checker/apis/${id}/stats`);
+}
+
+// Dashboard-level stats across all of the user's APIs.
+// Same shape as getApiStats: { stats: [{ status, count }], total }.
+export function getDashboardStats() {
+  return request("/checker/apis/apiStats");
+}
+
+export function pauseApi(id) {
+  return request(`/checker/apis/${id}/pause`, { method: "POST" });
+}
+
+export function resumeApi(id) {
+  return request(`/checker/apis/${id}/resume`, { method: "POST" });
+}
+
+export function isApiPaused(api) {
+  if (!api) return false;
+  if (typeof api.isPaused === "boolean") return api.isPaused;
+  if (typeof api.paused === "boolean") return api.paused;
+  if (api.enabled === false) return true;
+  return String(api.status ?? "").toUpperCase() === "PAUSED";
+}
+
 export async function getApiLogs(id) {
   const data = await request(`/checker/apis/${id}/logs`);
 

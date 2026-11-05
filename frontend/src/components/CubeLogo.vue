@@ -169,7 +169,6 @@ const bottomStyle = computed(() => ({
 
 .face {
   position: absolute;
-
   border: 2px solid #fff;
   display: flex;
   flex-direction: column;
