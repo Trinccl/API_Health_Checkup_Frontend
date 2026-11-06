@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, inject } from "vue";
+import { onMounted, onUnmounted, ref, inject } from "vue";
 import ApiStatsDonut from "@/components/ApiStatsDonut.vue";
 import {
   checkToken,
@@ -7,6 +7,10 @@ import {
   pauseApi,
   resumeApi,
   isApiPaused,
+  isStatusPending,
+  sleep,
+  SETTLE_DELAY_MS,
+  SETTLE_MAX_ATTEMPTS,
 } from "./api.js";
 
 const notify = inject("notify");
@@ -16,11 +20,34 @@ const ApiData = ref([]);
 const statsRef = ref(null);
 const busyId = ref(null);
 
+let settleTimer;
+let active = true;
+
+function settleStatuses(attempt = 0) {
+  clearTimeout(settleTimer);
+  if (
+    !active ||
+    !ApiData.value.some(isStatusPending) ||
+    attempt >= SETTLE_MAX_ATTEMPTS
+  ) {
+    return;
+  }
+
+  settleTimer = setTimeout(async () => {
+    await Promise.all([loadApis(), statsRef.value?.refresh()]);
+    settleStatuses(attempt + 1);
+  }, SETTLE_DELAY_MS);
+}
+
 async function checkif() {
   isLoading.value = true;
   try {
     isJwt.value = await checkToken();
-    if (isJwt.value) await loadApis();
+
+    if (isJwt.value) {
+      await loadApis();
+      settleStatuses();
+    }
   } catch (error) {
     isJwt.value = false;
     notify("Error: " + error.message, "error", "mdi-cancel");
@@ -47,7 +74,10 @@ async function togglePause(api) {
       "success",
       "$success",
     );
+
+    if (!pausing) await sleep(SETTLE_DELAY_MS);
     await Promise.all([loadApis(), statsRef.value?.refresh()]);
+    settleStatuses();
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
   } finally {
@@ -56,6 +86,10 @@ async function togglePause(api) {
 }
 
 onMounted(checkif);
+onUnmounted(() => {
+  active = false;
+  clearTimeout(settleTimer);
+});
 </script>
 
 <template>
@@ -68,55 +102,57 @@ onMounted(checkif);
   </v-container>
   <v-container fluid class="pa-4" v-else-if="isJwt">
     <div class="d-flex justify-space-between align-center mb-3">
-      <h1 class="text-headline font-weight-bold">Monitored APIs</h1>
+      <h1 class="text-headline-small font-weight-bold">Monitored APIs</h1>
       <v-btn color="primary" prepend-icon="mdi-plus" :to="`/dashboard/create`">
         Add API
       </v-btn>
     </div>
-    <div class="px-4 mb-2" style="max-width: 360px">
-      <ApiStatsDonut ref="statsRef" title="All APIs: check results" />
-    </div>
-    <div class="pa-4">
-      <div
-        class="border-thin rounded pa-4 d-flex flex-column justify-space-between mb-3"
-        v-for="api in ApiData"
-        :key="api.id"
-      >
-        <div class="border-b-thin d-flex pa-2">
-          <p class="ms-3 flex-grow-1">
-            Name:
-            <b>{{ api.name }}</b>
-          </p>
-          <v-btn
-            size="small"
-            variant="outlined"
-            class="me-3"
-            :prepend-icon="isApiPaused(api) ? 'mdi-play' : 'mdi-pause'"
-            :loading="busyId === api.id"
-            :disabled="busyId !== null && busyId !== api.id"
-            @click="togglePause(api)"
-          >
-            {{ isApiPaused(api) ? "Resume" : "Pause" }}
-          </v-btn>
-          <v-btn
-            size="small"
-            color="primary"
-            class="me-3"
-            :to="`/dashboard/${api.id}`"
-          >
-            Details
-          </v-btn>
-        </div>
+    <v-row cols="12">
+      <v-col md="2" class="px-4 mb-2" style="max-width: 360px">
+        <ApiStatsDonut ref="statsRef" title="All APIs: check results" />
+      </v-col>
+      <v-col class="pa-4" md="10">
+        <div
+          class="border-thin rounded pa-4 d-flex flex-column justify-space-between mb-3"
+          v-for="api in ApiData"
+          :key="api.id"
+        >
+          <div class="border-b-thin d-flex pa-2">
+            <p class="ms-3 flex-grow-1">
+              Name:
+              <b>{{ api.name }}</b>
+            </p>
+            <v-btn
+              size="small"
+              variant="outlined"
+              class="me-3"
+              :prepend-icon="isApiPaused(api) ? 'mdi-play' : 'mdi-pause'"
+              :loading="busyId === api.id"
+              :disabled="busyId !== null && busyId !== api.id"
+              @click="togglePause(api)"
+            >
+              {{ isApiPaused(api) ? "Resume" : "Pause" }}
+            </v-btn>
+            <v-btn
+              size="small"
+              color="primary"
+              class="me-3"
+              :to="`/dashboard/${api.id}`"
+            >
+              Details
+            </v-btn>
+          </div>
 
-        <div class="d-flex pa-2 mt-2">
-          <p class="ms-3 flex-grow-1">URL: {{ api.url }}</p>
-          <p class="me-3">Status: {{ api.status }}</p>
+          <div class="d-flex pa-2 mt-2">
+            <p class="ms-3 flex-grow-1">URL: {{ api.url }}</p>
+            <p class="me-3">Status: {{ api.status }}</p>
+          </div>
         </div>
-      </div>
-      <p class="text-center mt-3" v-if="!ApiData.length">
-        No APIs monitored yet. Use “Add API” to create your first one.
-      </p>
-    </div>
+        <p class="text-center mt-3" v-if="!ApiData.length">
+          No APIs monitored yet. Use “Add API” to create your first one.
+        </p>
+      </v-col>
+    </v-row>
   </v-container>
   <v-container fluid class="pa-4 d-flex align-center justify-center" v-else>
     <h1>Unauthorized Entry</h1>

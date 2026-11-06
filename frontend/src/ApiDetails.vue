@@ -1,6 +1,6 @@
 <script setup>
 import router from "./router.js";
-import { onMounted, onUnmounted, ref, inject } from "vue";
+import { onMounted, onUnmounted, ref, inject, computed } from "vue";
 import { useRoute } from "vue-router";
 import ApiAreaChart from "@/components/ApiAreaChart.vue";
 import ApiStatsDonut from "@/components/ApiStatsDonut.vue";
@@ -8,10 +8,16 @@ import {
   checkToken,
   getApi,
   getApiLogs,
+  getApiLog,
+  formatDateTime,
   deleteApi,
   pauseApi,
   resumeApi,
   isApiPaused,
+  isStatusPending,
+  sleep,
+  SETTLE_DELAY_MS,
+  SETTLE_MAX_ATTEMPTS,
   createRefreshScheduler,
 } from "./api.js";
 
@@ -24,6 +30,10 @@ const ApiData = ref(null);
 const LogsData = ref(null);
 const chartData = ref(null);
 const statsRef = ref(null);
+
+const headerEntries = computed(() =>
+  Object.entries(ApiData.value?.requestHeaders ?? {}),
+);
 
 const chartConfig = {
   responseTimeMs: {
@@ -44,10 +54,32 @@ const scheduler = createRefreshScheduler({
   getLastCheckAt: () => lastCheckAt,
 });
 
+let settleTimer;
+let active = true;
+
+function settle(attempt = 0) {
+  clearTimeout(settleTimer);
+  if (
+    !active ||
+    !isStatusPending(ApiData.value) ||
+    attempt >= SETTLE_MAX_ATTEMPTS
+  ) {
+    return;
+  }
+
+  settleTimer = setTimeout(async () => {
+    await refresh();
+    settle(attempt + 1);
+  }, SETTLE_DELAY_MS);
+}
+
 async function checkif() {
   isLoading.value = true;
   try {
-    if (await checkToken()) await refresh();
+    if (await checkToken()) {
+      await refresh();
+      settle();
+    }
   } catch {
     isJwt.value = false;
   } finally {
@@ -90,7 +122,10 @@ async function handleTogglePause() {
       "success",
       "$success",
     );
+
+    if (!pausing) await sleep(SETTLE_DELAY_MS);
     await refresh();
+    settle();
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
   } finally {
@@ -113,8 +148,67 @@ async function handleDelete() {
   }
 }
 
+const logDialog = ref(false);
+const isLogLoading = ref(false);
+const selectedLog = ref(null);
+
+async function openLog(logId) {
+  selectedLog.value = null;
+  logDialog.value = true;
+  isLogLoading.value = true;
+  try {
+    selectedLog.value = await getApiLog(route.params.id, logId);
+  } catch (error) {
+    logDialog.value = false;
+    notify("Error: " + error.message, "error", "mdi-cancel");
+  } finally {
+    isLogLoading.value = false;
+  }
+}
+
+const logRows = computed(() => {
+  const log = selectedLog.value;
+  if (!log) return [];
+
+  return [
+    ["Checked at", formatDateTime(log.createdAt)],
+    ["Status", log.status],
+    ["Status code", log.statusCode ?? "—"],
+    [
+      "Response time",
+      log.responseTimeMs == null
+        ? "—"
+        : `${Math.round(log.responseTimeMs * 100) / 100}ms`,
+    ],
+    ...(log.error ? [["Error", log.error]] : []),
+  ];
+});
+
+const prettyBody = computed(() => {
+  const body = selectedLog.value?.responseBody;
+  if (!body) return null;
+  try {
+    return JSON.stringify(JSON.parse(body), null, 2);
+  } catch {
+    return body;
+  }
+});
+
+async function copyBody() {
+  try {
+    await navigator.clipboard.writeText(selectedLog.value.responseBody);
+    notify("Copied response body", "success", "$success");
+  } catch {
+    notify("Could not copy to clipboard", "error", "mdi-cancel");
+  }
+}
+
 onMounted(checkif);
-onUnmounted(scheduler.stop);
+onUnmounted(() => {
+  active = false;
+  clearTimeout(settleTimer);
+  scheduler.stop();
+});
 </script>
 
 <template>
@@ -167,6 +261,19 @@ onUnmounted(scheduler.stop);
 
           <div class="d-flex align-center border-b-thin">
             <p class="pa-3 flex-grow-1">Status: {{ ApiData?.status }}</p>
+          </div>
+          <div class="border-b-thin pa-3">
+            <p>
+              Request headers:
+              <span v-if="!headerEntries.length">none</span>
+            </p>
+            <p
+              v-for="[name, value] in headerEntries"
+              :key="name"
+              class="ms-4 text-break"
+            >
+              {{ name }}: {{ value }}
+            </p>
           </div>
           <div class="d-flex align-center border-b-thin">
             <p class="pa-3 flex-grow-1">
@@ -242,13 +349,84 @@ onUnmounted(scheduler.stop);
             </p>
           </div>
 
-          <div class="d-flex mt-2 pa-2">
-            <p class="ms-3 flex-grow-1">Status Code: {{ log.statusCode }}</p>
+          <div class="d-flex align-center mt-2 pa-2">
+            <p class="ms-3 flex-grow-1">Created At: {{ log.createdAt }}</p>
             <p v-if="log.error" class="me-3">{{ log.error }}</p>
+            <v-btn
+              size="small"
+              variant="tonal"
+              class="me-3"
+              prepend-icon="mdi-eye-outline"
+              @click="openLog(log.id)"
+            >
+              Details
+            </v-btn>
           </div>
         </div>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="logDialog" max-width="720">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <span class="flex-grow-1">Log details</span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            aria-label="Close"
+            @click="logDialog = false"
+          />
+        </v-card-title>
+        <v-divider />
+        <v-card-text>
+          <div v-if="isLogLoading" class="d-flex justify-center pa-6">
+            <v-progress-circular indeterminate color="primary" />
+          </div>
+
+          <template v-else-if="selectedLog">
+            <div class="border-thin rounded mb-4">
+              <div
+                v-for="[label, value] in logRows"
+                :key="label"
+                class="d-flex border-b-thin pa-3"
+              >
+                <p class="w-33 font-weight-bold">{{ label }}</p>
+                <p class="flex-grow-1 text-break">{{ value }}</p>
+              </div>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <p class="font-weight-bold flex-grow-1">Response body</p>
+              <v-btn
+                v-if="prettyBody"
+                size="small"
+                variant="text"
+                prepend-icon="mdi-content-copy"
+                @click="copyBody"
+              >
+                Copy
+              </v-btn>
+            </div>
+            <pre
+              v-if="prettyBody"
+              class="border-thin rounded pa-3 overflow-auto"
+              style="
+                max-height: 320px;
+                white-space: pre-wrap;
+                word-break: break-word;
+                font-size: 0.85rem;
+                font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+              "
+              >{{ prettyBody }}</pre
+            >
+            <p v-else class="text-medium-emphasis">
+              No response body was stored for this check.
+            </p>
+          </template>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
   <v-container fluid class="pa-4 d-flex align-center justify-center" v-else>
     <h1>Page doesn't exist</h1>

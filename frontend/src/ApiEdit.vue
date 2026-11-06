@@ -2,7 +2,14 @@
 import router from "./router.js";
 import { onMounted, ref, inject } from "vue";
 import { useRoute } from "vue-router";
-import { checkToken, getApi, updateApi } from "./api.js";
+import HeadersEditor from "@/components/HeadersEditor.vue";
+import {
+  checkToken,
+  getApi,
+  updateApi,
+  headersToRows,
+  rowsToHeaders,
+} from "./api.js";
 
 const notify = inject("notify");
 const route = useRoute();
@@ -18,6 +25,7 @@ const sendOnSlow = ref(true);
 const sendOnDown = ref(true);
 const reqBodyInput = ref("");
 const expectedBodyInput = ref("");
+const headerRows = ref([]);
 
 async function checkif() {
   isLoading.value = true;
@@ -39,6 +47,7 @@ async function loadApi() {
     ApiData.value = data;
     sendOnDown.value = data.alertOnDown;
     sendOnSlow.value = data.alertOnSlow;
+    headerRows.value = headersToRows(data.requestHeaders);
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
   }
@@ -58,6 +67,7 @@ async function submitPatch() {
       alertOnSlow: sendOnSlow.value,
       requestBody: reqBodyInput.value || ApiData.value.requestBody,
       expectedBody: expectedBodyInput.value || ApiData.value.expectedBody,
+      requestHeaders: rowsToHeaders(headerRows.value),
     });
     notify("Successfully modified data!", "success", "$success");
     router.push(`/dashboard/${route.params.id}`);
@@ -86,7 +96,7 @@ onMounted(checkif);
     >
       Return to details
     </v-btn>
-    <v-row cols="12">
+    <v-row cols="12" class="d-flex align-center justify-center">
       <v-col md="8">
         <v-form @submit.prevent="submitPatch" class="mb-[40px]">
           <div class="border-thin rounded">
@@ -185,6 +195,12 @@ onMounted(checkif);
                 v-if="ApiData?.requestMethod != 'HEAD'"
               />
             </div>
+
+            <div class="border-b-thin pa-3">
+              <p class="mb-3">Request headers:</p>
+              <HeadersEditor v-model="headerRows" />
+            </div>
+
             <div class="d-flex align-center border-b-thin">
               <p class="pa-3 w-50 border-e-thin">
                 Send alert on Slow: {{ ApiData?.alertOnSlow ? "Yes" : "No" }}

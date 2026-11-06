@@ -1,15 +1,24 @@
 <script setup>
 import { onMounted, ref, inject, computed, watch } from "vue";
 import router from "./router.js";
-import { checkToken, createApi } from "./api.js";
+import HeadersEditor from "@/components/HeadersEditor.vue";
+import {
+  checkToken,
+  createApi,
+  rowsToHeaders,
+  sleep,
+  SETTLE_DELAY_MS,
+} from "./api.js";
 
 const notify = inject("notify");
 const isJwt = ref(false);
 const isLoading = ref(true);
+const isSubmitting = ref(false);
 
 const urlInput = ref("");
 const nameInput = ref("");
 const reqBodyInput = ref("");
+const headerRows = ref([]);
 const expectedBodyInput = ref("");
 const thresholdInput = ref("");
 const errorThresholdInput = ref("");
@@ -41,6 +50,7 @@ async function checkif() {
 }
 
 const addAskHealthAPI = async () => {
+  isSubmitting.value = true;
   try {
     await createApi({
       name: nameInput.value,
@@ -53,11 +63,15 @@ const addAskHealthAPI = async () => {
       alertOnSlow: sendOnSlow.value,
       requestBody: reqBodyInput.value,
       expectedBody: expectedBodyInput.value,
+      requestHeaders: rowsToHeaders(headerRows.value),
     });
     notify("Success!", "success", "$success");
+    await sleep(SETTLE_DELAY_MS);
     router.push("/dashboard");
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -76,7 +90,7 @@ onMounted(checkif);
     <v-btn size="small" color="primary" class="mb-3" :to="`/dashboard`">
       Return to dashboard
     </v-btn>
-    <v-row cols="12">
+    <v-row cols="12" class="d-flex align-center justify-center">
       <v-col md="8" class="border-thin rounded">
         <v-form @submit.prevent="addAskHealthAPI" class="pa-3 w-100 mt-3">
           <v-text-field
@@ -167,6 +181,8 @@ onMounted(checkif);
             density="comfortable"
             class="mb-2"
           ></v-select>
+          <p class="ms-2 mb-2">Request Headers (optional)</p>
+          <HeadersEditor v-model="headerRows" class="mb-8" />
           <v-row cols="12">
             <v-col md="6">
               <v-checkbox
@@ -181,7 +197,13 @@ onMounted(checkif);
               ></v-checkbox>
             </v-col>
           </v-row>
-          <v-btn type="submit" color="primary" block class="mt-3">
+          <v-btn
+            type="submit"
+            color="primary"
+            block
+            class="mt-3"
+            :loading="isSubmitting"
+          >
             Create API
           </v-btn>
         </v-form>

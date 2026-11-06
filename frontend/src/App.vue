@@ -80,6 +80,7 @@ function handleLogout() {
           variant="text"
           class="mr-3"
           :to="`/dashboard`"
+          v-if="isLoggedIn"
         >
           Dashboard
         </v-btn>
@@ -88,6 +89,7 @@ function handleLogout() {
           variant="text"
           class="mr-3"
           :to="`/dashboard/create`"
+          v-if="isLoggedIn"
         >
           Add API
         </v-btn>

@@ -100,6 +100,7 @@ export function createApi(form) {
       alertOnSlow: form.alertOnSlow,
       requestBody: form.requestBody,
       expectedBody: form.expectedBody,
+      requestHeaders: form.requestHeaders,
     },
   });
 }
@@ -118,8 +119,56 @@ export function updateApi(id, changes = {}) {
       alertOnSlow: changes.alertOnSlow,
       requestBody: changes.requestBody,
       expectedBody: changes.expectedBody,
+      requestHeaders: changes.requestHeaders,
     },
   });
+}
+
+// ---- Request header helpers -------------------------------------------
+// The form edits headers as rows ({ id, name, value }); the backend stores
+// them as a plain object ({ "Authorization": "Bearer ..." }).
+
+let headerRowId = 0;
+
+export function newHeaderRow() {
+  return { id: ++headerRowId, name: "", value: "" };
+}
+
+export function headersToRows(headers) {
+  return Object.entries(headers ?? {}).map(([name, value]) => ({
+    id: ++headerRowId,
+    name,
+    value: String(value ?? ""),
+  }));
+}
+
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9a-z-]+$/i;
+
+// Throws a readable Error for bad input; returns null when there are no
+// headers (which makes the backend clear them).
+export function rowsToHeaders(rows) {
+  const headers = {};
+  const seen = new Set();
+
+  for (const row of rows ?? []) {
+    const name = row.name.trim();
+    const value = row.value.trim();
+
+    if (!name && !value) continue; // ignore blank rows
+
+    if (!name) throw new Error("Every header needs a name");
+    if (!HEADER_NAME.test(name)) {
+      throw new Error(`"${name}" is not a valid header name`);
+    }
+    if (seen.has(name.toLowerCase())) {
+      throw new Error(`Header "${name}" is added more than once`);
+    }
+
+    seen.add(name.toLowerCase());
+    headers[name] = value;
+  }
+
+  return Object.keys(headers).length ? headers : null;
 }
 
 export function deleteApi(id) {
@@ -166,6 +215,35 @@ export async function getApiLogs(id) {
   }
 
   return { data, chartData: [...data.items].reverse(), lastCheckAt };
+}
+
+// The backend checks a new or resumed API right away, but that request can take
+// a few seconds (up to its 5s timeout). Until it finishes the status is UNKNOWN.
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+export const SETTLE_DELAY_MS = 1000;
+export const SETTLE_MAX_ATTEMPTS = 5;
+
+export function isStatusPending(api) {
+  return String(api?.status ?? "").toUpperCase() === "UNKNOWN";
+}
+
+export function getApiLog(id, logId) {
+  return request(`/checker/apis/${id}/logs/${logId}`);
+}
+
+// Same as formatDate but with seconds, for the single-log view.
+export function formatDateTime(dateString) {
+  if (!dateString) return "";
+
+  return new Intl.DateTimeFormat("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date(dateString));
 }
 
 export function formatDate(dateString) {
