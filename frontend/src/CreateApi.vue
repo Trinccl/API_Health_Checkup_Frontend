@@ -9,6 +9,7 @@ import {
   sleep,
   SETTLE_DELAY_MS,
 } from "./api.js";
+import JsonTextArea from "./components/JsonTextArea.vue";
 
 const notify = inject("notify");
 const isJwt = ref(false);
@@ -76,6 +77,28 @@ const addAskHealthAPI = async () => {
 };
 
 onMounted(checkif);
+
+function formatExpectedJson() {
+  if (!expectedBodyInput.value) return null;
+  try {
+    expectedBodyInput.value = JSON.stringify(
+      JSON.parse(expectedBodyInput.value),
+      null,
+      2,
+    );
+  } catch {}
+}
+
+function formatRequestJson() {
+  if (!reqBodyInput.value) return null;
+  try {
+    reqBodyInput.value = JSON.stringify(
+      JSON.parse(reqBodyInput.value),
+      null,
+      2,
+    );
+  } catch {}
+}
 </script>
 
 <template>
@@ -143,27 +166,27 @@ onMounted(checkif);
             class="mb-2"
           ></v-text-field>
 
-          <v-text-field
-            v-model="reqBodyInput"
-            label="Request Body (optional)"
-            type="text"
-            placeholder="JSON or plainText"
-            variant="outlined"
-            density="comfortable"
-            class="mb-2"
-            :disabled="noRequestBody"
-          ></v-text-field>
+          <div class="mb-8">
+            <JsonTextArea
+              v-model="reqBodyInput"
+              label="Request Body (optional)"
+              placeholder="JSON or plain text"
+              :disabled="noRequestBody"
+              class="mb-2"
+            />
+            <v-btn @click="formatRequestJson"> Format JSON </v-btn>
+          </div>
 
-          <v-text-field
-            v-model="expectedBodyInput"
-            label="Expected Body (optional)"
-            type="text"
-            placeholder="JSON or plainText"
-            variant="outlined"
-            density="comfortable"
-            class="mb-2"
-            :disabled="noExpectedBody"
-          ></v-text-field>
+          <div class="mb-8">
+            <JsonTextArea
+              v-model="expectedBodyInput"
+              label="Expected Body (optional)"
+              placeholder="JSON or plain text"
+              :disabled="noExpectedBody"
+              class="mb-2"
+            />
+            <v-btn @click="formatExpectedJson"> Format JSON </v-btn>
+          </div>
 
           <v-select
             v-model="requestMethodInput"

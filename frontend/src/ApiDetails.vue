@@ -20,6 +20,7 @@ import {
   SETTLE_MAX_ATTEMPTS,
   createRefreshScheduler,
 } from "./api.js";
+import FormatterWithPre from "./components/FormatterWithPre.vue";
 
 const notify = inject("notify");
 const route = useRoute();
@@ -277,12 +278,12 @@ onUnmounted(() => {
           </div>
           <div class="d-flex align-center border-b-thin">
             <p class="pa-3 flex-grow-1">
-              Request body: {{ ApiData?.requestBody }}
+              Request body: <FormatterWithPre :value="ApiData?.requestBody" />
             </p>
           </div>
           <div class="d-flex align-center border-b-thin">
             <p class="pa-3 flex-grow-1">
-              Expected body: {{ ApiData?.expectedBody }}
+              Expected body: <FormatterWithPre :value="ApiData?.expectedBody" />
             </p>
           </div>
           <div class="d-flex align-center border-b-thin">
@@ -408,21 +409,7 @@ onUnmounted(() => {
                 Copy
               </v-btn>
             </div>
-            <pre
-              v-if="prettyBody"
-              class="border-thin rounded pa-3 overflow-auto"
-              style="
-                max-height: 320px;
-                white-space: pre-wrap;
-                word-break: break-word;
-                font-size: 0.85rem;
-                font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-              "
-              >{{ prettyBody }}</pre
-            >
-            <p v-else class="text-medium-emphasis">
-              No response body was stored for this check.
-            </p>
+            <FormatterWithPre :value="selectedLog?.responseBody" />
           </template>
         </v-card-text>
       </v-card>

@@ -1,8 +1,6 @@
 <script setup>
 import { newHeaderRow } from "../api.js";
 
-// v-model is an array of { id, name, value } rows (see headersToRows /
-// rowsToHeaders in api.js for converting to and from the backend's object).
 const rows = defineModel({ type: Array, default: () => [] });
 
 function addRow() {

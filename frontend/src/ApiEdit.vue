@@ -1,6 +1,6 @@
 <script setup>
 import router from "./router.js";
-import { onMounted, ref, inject } from "vue";
+import { onMounted, ref, inject, computed } from "vue";
 import { useRoute } from "vue-router";
 import HeadersEditor from "@/components/HeadersEditor.vue";
 import {
@@ -10,7 +10,8 @@ import {
   headersToRows,
   rowsToHeaders,
 } from "./api.js";
-
+import JsonTextArea from "./components/JsonTextArea.vue";
+import FormatterWithPre from "./components/FormatterWithPre.vue";
 const notify = inject("notify");
 const route = useRoute();
 
@@ -74,6 +75,28 @@ async function submitPatch() {
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
   }
+}
+
+function formatExpectedJson() {
+  if (!expectedBodyInput.value) return null;
+  try {
+    expectedBodyInput.value = JSON.stringify(
+      JSON.parse(expectedBodyInput.value),
+      null,
+      2,
+    );
+  } catch {}
+}
+
+function formatRequestJson() {
+  if (!reqBodyInput.value) return null;
+  try {
+    reqBodyInput.value = JSON.stringify(
+      JSON.parse(reqBodyInput.value),
+      null,
+      2,
+    );
+  } catch {}
 }
 
 onMounted(checkif);
@@ -163,37 +186,39 @@ onMounted(checkif);
               />
             </div>
 
-            <div class="d-flex align-center border-b-thin">
+            <div
+              class="d-flex align-center border-b-thin"
+              v-if="!['GET', 'HEAD'].includes(ApiData?.requestMethod)"
+            >
               <p class="pa-3 w-50 border-e-thin">
                 Request body:
-                {{ ApiData?.requestBody }}
+                <FormatterWithPre :value="ApiData?.requestBody" />
               </p>
-              <v-text-field
-                v-model="reqBodyInput"
-                label="New request body:"
-                type="text"
-                variant="plain"
-                density="compact"
-                hide-details
-                class="inline-field w-50 px-3"
-                v-if="!['GET', 'HEAD'].includes(ApiData?.requestMethod)"
-              />
+              <div class="inline-field w-50 pa-3">
+                <JsonTextArea
+                  v-model="reqBodyInput"
+                  label="New request body:"
+                  class="mb-3"
+                />
+                <v-btn @click="formatRequestJson"> Format JSON </v-btn>
+              </div>
             </div>
-            <div class="d-flex align-center border-b-thin">
+            <div
+              class="d-flex align-center border-b-thin"
+              v-if="ApiData?.requestMethod != 'HEAD'"
+            >
               <p class="pa-3 w-50 border-e-thin">
                 Expected body:
-                {{ ApiData?.expectedBody }}
+                <FormatterWithPre :value="ApiData?.expectedBody" />
               </p>
-              <v-text-field
-                v-model="expectedBodyInput"
-                label="New expected body"
-                type="text"
-                variant="plain"
-                density="compact"
-                hide-details
-                class="inline-field w-50 px-3"
-                v-if="ApiData?.requestMethod != 'HEAD'"
-              />
+              <div class="inline-field w-50 pa-3">
+                <JsonTextArea
+                  v-model="expectedBodyInput"
+                  label="New expected body"
+                  class="mb-3"
+                />
+                <v-btn @click="formatExpectedJson"> Format JSON </v-btn>
+              </div>
             </div>
 
             <div class="border-b-thin pa-3">
