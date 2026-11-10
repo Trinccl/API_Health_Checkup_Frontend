@@ -4,6 +4,8 @@ import App from "./App.vue";
 import vuetify from "./plugins/vuetify";
 import router from "./router.js";
 
+document.title = "Api Health Checker";
+
 const app = createApp(App);
 
 app.use(vuetify);

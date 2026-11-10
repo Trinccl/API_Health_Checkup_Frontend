@@ -1,10 +1,11 @@
 <script setup>
-import { ref, provide, reactive } from "vue";
-import { useRouter } from "vue-router";
+import { ref, provide, reactive, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import CubeLogo from "./components/CubeLogo.vue";
-import { isLoggedIn, logout } from "./api.js";
+import { isLoggedIn, logout, checkToken } from "./api.js";
 
 const router = useRouter();
+const route = useRoute();
 
 const topmessage = ref("API");
 const bottommessage = ref("HP");
@@ -12,6 +13,8 @@ const xSpeed = ref(1);
 const ySpeed = ref(1);
 const appleModeCheck = ref(false);
 const widthVal = ref(50);
+const isJwt = ref(false);
+const isLoading = ref(true);
 
 const state = reactive({
   show: false,
@@ -34,11 +37,38 @@ function handleLogout() {
   notify("Logged out", "success", "mdi-logout");
   router.push("/");
 }
+
+async function checkif() {
+  isLoading.value = true;
+  try {
+    isJwt.value = await checkToken();
+  } catch (error) {
+    isJwt.value = false;
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+watch(
+  () => route.fullPath,
+  (newRoute, oldRoute) => {
+    checkif();
+  },
+);
+
+onMounted(checkif);
 </script>
 
 <template>
   <v-app class="pa-0 ma-0">
-    <v-main class="pa-0 ma-0 d-flex flex-column">
+    <v-container
+      fluid
+      class="pa-4 d-flex align-center justify-center"
+      v-if="isLoading"
+    >
+      <v-progress-circular indeterminate color="primary"></v-progress-circular>
+    </v-container>
+    <v-main class="pa-0 ma-0 d-flex flex-column" v-else-if="!isLoading">
       <v-snackbar
         :color="state.color"
         location="bottom"
@@ -80,7 +110,7 @@ function handleLogout() {
           variant="text"
           class="mr-3"
           :to="`/dashboard`"
-          v-if="isLoggedIn"
+          v-if="isJwt"
         >
           Dashboard
         </v-btn>
@@ -89,12 +119,12 @@ function handleLogout() {
           variant="text"
           class="mr-3"
           :to="`/dashboard/create`"
-          v-if="isLoggedIn"
+          v-if="isJwt"
         >
           Add API
         </v-btn>
         <v-btn
-          v-if="isLoggedIn"
+          v-if="isJwt"
           variant="text"
           prepend-icon="mdi-logout"
           class="mr-3"
@@ -103,7 +133,12 @@ function handleLogout() {
           Logout
         </v-btn>
       </nav>
-      <RouterView />
+      <RouterView class="flex-grow-1" />
+      <footer
+        class="d-flex align-center justify-center flex-wrap flex-grow-0 pa-5 border-t-thin"
+      >
+        Api health check app made by Adam and Tomek
+      </footer>
     </v-main>
   </v-app>
 </template>
