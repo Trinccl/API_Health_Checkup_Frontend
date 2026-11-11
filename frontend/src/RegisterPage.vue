@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject } from "vue";
-import router from "./router.js";
 import CubeLogo from "./components/CubeLogo.vue";
+import ResendVerification from "./components/ResendVerification.vue";
 import { register } from "./api.js";
 const topmessage = ref("API");
 const bottommessage = ref("HP");
@@ -11,6 +11,7 @@ const appleModeCheck = ref(false);
 const widthVal = ref(50);
 const notify = inject("notify");
 const repass = ref("");
+const sentTo = ref("");
 
 const regForm = ref({
   email: "",
@@ -30,8 +31,12 @@ const submitReg = async () => {
       regForm.value.email,
       regForm.value.password,
     );
-    notify("Successfully created a user", "success", "$success");
-    router.push("/");
+    notify(
+      "Account created. Check your email to confirm it.",
+      "success",
+      "$success",
+    );
+    sentTo.value = regForm.value.email;
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
   }
@@ -62,7 +67,11 @@ const submitReg = async () => {
         <div class="pa-4">
           <h2 class="text-headline-large pa-3">Register</h2>
           <hr />
-          <v-form @submit.prevent="submitReg" class="pa-3 w-100 mt-3">
+          <v-form
+            v-if="!sentTo"
+            @submit.prevent="submitReg"
+            class="pa-3 w-100 mt-3"
+          >
             <v-text-field
               v-model="regForm.name"
               label="Name"
@@ -104,6 +113,14 @@ const submitReg = async () => {
               Create account
             </v-btn>
           </v-form>
+          <div v-else class="pa-3 mt-3">
+            <p class="mb-2 font-weight-bold">Check your inbox</p>
+            <p class="mb-4">
+              We sent a confirmation link to {{ sentTo }}. Open it to activate
+              your account. It expires in 24 hours.
+            </p>
+            <ResendVerification :email="sentTo" start-cooldown />
+          </div>
           <p class="pa-3">
             Already have an account?
             <router-link to="/" class="text-decoration-underline"

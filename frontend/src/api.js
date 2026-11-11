@@ -72,6 +72,22 @@ export function register(name, email, password) {
   });
 }
 
+export function verifyEmail(token) {
+  return request("/auth/verify-email", {
+    method: "POST",
+    auth: false,
+    body: { token },
+  });
+}
+
+export function resendVerification(email) {
+  return request("/auth/resend-verification", {
+    method: "POST",
+    auth: false,
+    body: { email },
+  });
+}
+
 export async function checkToken() {
   if (!getToken()) return false;
   await request("/auth/checkToken", { method: "POST" });

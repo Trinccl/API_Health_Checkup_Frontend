@@ -3,6 +3,7 @@ import { ref, inject } from "vue";
 import { setToken } from "./api.js";
 import router from "./router.js";
 import CubeLogo from "./components/CubeLogo.vue";
+import ResendVerification from "./components/ResendVerification.vue";
 import { login } from "./api.js";
 
 const topmessage = ref("API");
@@ -19,12 +20,17 @@ const logForm = ref({
   password: "",
 });
 
+const needsVerification = ref(false);
+
 const submitLogin = async () => {
+  needsVerification.value = false;
   try {
     await login(logForm.value.email, logForm.value.password);
     notify("Successfully logged in", "success", "$success");
     router.push("/dashboard");
   } catch (error) {
+    // 403 = right password, but the email isn't confirmed yet
+    if (error.status === 403) needsVerification.value = true;
     notify("Error: " + error.message, "error", "mdi-cancel");
   }
 };
@@ -78,6 +84,13 @@ const submitLogin = async () => {
               Log in
             </v-btn>
           </v-form>
+          <div v-if="needsVerification" class="px-3 pb-2">
+            <p class="mb-3">
+              Your email isn't confirmed yet. Check your inbox (and spam), or
+              send a new link:
+            </p>
+            <ResendVerification :email="logForm.email" />
+          </div>
           <p class="pa-3">
             Don't have an account?
             <router-link to="/register" class="text-decoration-underline"
