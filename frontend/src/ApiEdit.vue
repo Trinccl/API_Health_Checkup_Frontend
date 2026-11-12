@@ -126,7 +126,9 @@ onMounted(checkif);
         <v-form @submit.prevent="submitPatch" class="mb-[40px]">
           <div class="border-thin rounded field-card">
             <div class="d-flex align-center border-b-thin font-weight-bold">
-              <p class="pa-3 flex-grow-1">Name: {{ ApiData?.name }}</p>
+              <p class="pa-3 flex-grow-1 text-break">
+                Name: {{ ApiData?.name }}
+              </p>
             </div>
 
             <div class="d-flex align-center border-b-thin">
@@ -145,7 +147,7 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="field-input px-3"
+                class="field-input px-3 mb-2 mt-2"
               ></v-text-field>
             </div>
 
@@ -164,7 +166,7 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="field-input px-3"
+                class="field-input px-3 mb-2 mt-2"
               ></v-text-field>
             </div>
 
@@ -187,7 +189,7 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="field-input px-3"
+                class="field-input px-3 mb-2 mt-2"
               />
             </div>
 
@@ -240,7 +242,7 @@ onMounted(checkif);
                 label="Send mail alert on Slow API status"
                 density="compact"
                 hide-details
-                class="field-input px-3"
+                class="field-input px-3 mb-2 mt-2"
               ></v-checkbox>
             </div>
 
@@ -253,7 +255,7 @@ onMounted(checkif);
                 label="Send mail alert on Down API status"
                 density="compact"
                 hide-details
-                class="field-input px-3"
+                class="field-input px-3 mb-2 mt-2"
               ></v-checkbox>
             </div>
           </div>

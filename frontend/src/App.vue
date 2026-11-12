@@ -2,7 +2,7 @@
 import { ref, provide, reactive, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CubeLogo from "./components/CubeLogo.vue";
-import { isLoggedIn, logout, checkToken } from "./api.js";
+import { isLoggedIn, logout, checkToken, deleteMe } from "./api.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -48,6 +48,13 @@ async function checkif() {
   } finally {
     isLoading.value = false;
   }
+}
+
+function handleDelete() {
+  confirmDelete.value = false;
+  deleteMe();
+  notify("Deleted user", "success", "mdi-account-remove");
+  router.push("/");
 }
 
 watch(
@@ -166,9 +173,9 @@ onMounted(checkif);
             />
           </v-card-title>
           <v-divider />
-          <v-card-text class="d-flex w-100">
-            <v-btn>Yes</v-btn>
-            <v-btn>No</v-btn>
+          <v-card-text class="d-flex w-100 gap-2">
+            <v-btn class="flex-grow-1" @click="handleDelete">Yes</v-btn>
+            <v-btn class="flex-grow-1" @click="confirmDelete = false">No</v-btn>
           </v-card-text>
         </v-card>
       </v-dialog>

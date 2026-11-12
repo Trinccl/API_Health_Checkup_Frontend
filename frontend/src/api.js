@@ -72,6 +72,14 @@ export function register(name, email, password) {
   });
 }
 
+export function deleteMe() {
+  request("/auth/me", {
+    method: "DELETE",
+    auth: true,
+  });
+  logout();
+}
+
 export function verifyEmail(token) {
   return request("/auth/verify-email", {
     method: "POST",
@@ -103,6 +111,24 @@ export function getApi(id) {
 }
 
 export function createApi(form) {
+  if (!form.alertOnDown && !form.alertOnSlow) {
+    return request("/checker/apis", {
+      method: "POST",
+      body: {
+        name: form.name,
+        url: String(form.url).replace(/\/+$/, ""),
+        slowThresholdMs: Number(form.slowThresholdMs),
+        errorsToAlert: null,
+        requestMethod: form.requestMethod,
+        intervalMinutes: Number(form.intervalMinutes),
+        alertOnDown: form.alertOnDown,
+        alertOnSlow: form.alertOnSlow,
+        requestBody: form.requestBody,
+        expectedBody: form.expectedBody,
+        requestHeaders: form.requestHeaders,
+      },
+    });
+  }
   return request("/checker/apis", {
     method: "POST",
     body: {
@@ -122,6 +148,24 @@ export function createApi(form) {
 }
 
 export function updateApi(id, changes = {}) {
+  if (!changes.alertOnDown && !changes.alertOnSlow) {
+    return request(`/checker/apis/${id}`, {
+      method: "PATCH",
+      body: {
+        name: changes.name,
+        url: changes.url,
+        slowThresholdMs: Number(changes.slowThresholdMs),
+        errorsToAlert: null,
+        requestMethod: changes.requestMethod,
+        intervalMinutes: Number(changes.intervalMinutes),
+        alertOnDown: changes.alertOnDown,
+        alertOnSlow: changes.alertOnSlow,
+        requestBody: changes.requestBody,
+        expectedBody: changes.expectedBody,
+        requestHeaders: changes.requestHeaders,
+      },
+    });
+  }
   return request(`/checker/apis/${id}`, {
     method: "PATCH",
     body: {

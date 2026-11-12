@@ -160,7 +160,14 @@
 .field-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  /* stretch (not center): the label cell has to span the full row height,
+     otherwise its divider only covers the label text and stops short of the
+     row's top and bottom borders on tall rows (request / expected body). */
+  align-items: stretch;
+}
+/* The input side stays vertically centered next to the label. */
+.field-row > .field-input {
+  align-self: center;
 }
 .field-row > .field-label,
 .field-row > .field-input {
