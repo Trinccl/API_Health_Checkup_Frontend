@@ -144,7 +144,7 @@ onUnmounted(() => {
           </div>
 
           <div class="d-flex pa-2 mt-2">
-            <p class="ms-3 flex-grow-1">URL: {{ api.url }}</p>
+            <p class="ms-3 flex-grow-1 break-words">URL: {{ api.url }}</p>
             <p class="me-3">Status: {{ api.status }}</p>
           </div>
         </div>

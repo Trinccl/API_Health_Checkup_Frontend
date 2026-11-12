@@ -128,11 +128,11 @@ onMounted(checkif);
             </div>
 
             <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 flex-grow-1">Url: {{ ApiData?.url }}</p>
+              <p class="pa-3 flex-grow-1 text-break">Url: {{ ApiData?.url }}</p>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="d-flex align-center border-b-thin flex-wrap">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Slow API Threshold: {{ ApiData?.slowThresholdMs }}ms
               </p>
               <v-text-field
@@ -143,12 +143,12 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="inline-field w-50 px-3"
+                class="inline-field w-100 md:w-50 px-3"
               ></v-text-field>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="d-flex align-center border-b-thin flex-wrap">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Errors in a row until alert: {{ ApiData?.errorsToAlert }}
               </p>
               <v-text-field
@@ -159,7 +159,7 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="inline-field w-50 px-3"
+                class="inline-field w-100 md:w-50 px-3"
               ></v-text-field>
             </div>
 
@@ -169,8 +169,8 @@ onMounted(checkif);
               </p>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="d-flex align-center border-b-thin flex-wrap">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Interval between health checks:
                 {{ ApiData?.intervalMinutes }} minutes
               </p>
@@ -182,19 +182,19 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="inline-field w-50 px-3"
+                class="inline-field w-100 md:w-50 px-3"
               />
             </div>
 
             <div
-              class="d-flex align-center border-b-thin"
+              class="d-flex align-center border-b-thin flex-wrap"
               v-if="!['GET', 'HEAD'].includes(ApiData?.requestMethod)"
             >
-              <p class="pa-3 w-50 border-e-thin">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Request body:
                 <FormatterWithPre :value="ApiData?.requestBody" />
               </p>
-              <div class="inline-field w-50 pa-3">
+              <div class="inline-field w-100 md:w-50 pa-3">
                 <JsonTextArea
                   v-model="reqBodyInput"
                   label="New request body:"
@@ -204,14 +204,14 @@ onMounted(checkif);
               </div>
             </div>
             <div
-              class="d-flex align-center border-b-thin"
+              class="d-flex align-center border-b-thin flex-wrap"
               v-if="ApiData?.requestMethod != 'HEAD'"
             >
-              <p class="pa-3 w-50 border-e-thin">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Expected body:
                 <FormatterWithPre :value="ApiData?.expectedBody" />
               </p>
-              <div class="inline-field w-50 pa-3">
+              <div class="inline-field w-100 md:w-50 pa-3">
                 <JsonTextArea
                   v-model="expectedBodyInput"
                   label="New expected body"
@@ -226,8 +226,8 @@ onMounted(checkif);
               <HeadersEditor v-model="headerRows" />
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="d-flex align-center border-b-thin flex-wrap">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Send alert on Slow: {{ ApiData?.alertOnSlow ? "Yes" : "No" }}
               </p>
               <v-checkbox
@@ -235,12 +235,12 @@ onMounted(checkif);
                 label="Send mail alert on Slow API status"
                 density="compact"
                 hide-details
-                class="inline-checkbox w-50 px-3"
+                class="inline-checkbox w-100 md:w-50 px-3"
               ></v-checkbox>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="d-flex align-center border-b-thin flex-wrap">
+              <p class="pa-3 md:w-50 md:border-e-thin">
                 Send alert on Down: {{ ApiData?.alertOnDown ? "Yes" : "No" }}
               </p>
               <v-checkbox
@@ -248,7 +248,7 @@ onMounted(checkif);
                 label="Send mail alert on Down API status"
                 density="compact"
                 hide-details
-                class="inline-checkbox w-50 px-3"
+                class="inline-checkbox w-100 md:w-50 px-3"
               ></v-checkbox>
             </div>
           </div>

@@ -84,7 +84,7 @@ onMounted(checkif);
       </v-snackbar>
 
       <nav
-        class="d-flex justify-start align-center ma-3 border-b-thin"
+        class="d-flex justify-start align-center ma-3 border-b-thin flex-wrap gap-x-2 gap-y-1"
         v-if="$route.path != '/' && $route.path != '/register'"
       >
         <CubeLogo
@@ -99,7 +99,7 @@ onMounted(checkif);
           :appleMode="appleModeCheck"
           :width="widthVal"
         />
-        <h1 class="text-headline-large pa-3 font-weight-bold">
+        <h1 class="text-headline-xs md:text-headline-md lg:text-headline-large pa-2 md:pa-3 font-weight-bold">
           <a href="/"> API Health Checkup </a>
         </h1>
 
@@ -108,7 +108,6 @@ onMounted(checkif);
         <v-btn
           color="primary"
           variant="text"
-          class="mr-3"
           :to="`/dashboard`"
           v-if="isJwt"
         >
@@ -117,7 +116,6 @@ onMounted(checkif);
         <v-btn
           color="primary"
           variant="text"
-          class="mr-3"
           :to="`/dashboard/create`"
           v-if="isJwt"
         >
@@ -127,7 +125,6 @@ onMounted(checkif);
           v-if="isJwt"
           variant="text"
           prepend-icon="mdi-logout"
-          class="mr-3"
           @click="handleLogout"
         >
           Logout

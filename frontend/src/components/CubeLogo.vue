@@ -162,6 +162,12 @@ const bottomStyle = computed(() => ({
   align-items: center;
 }
 
+@media (max-width: 640px) {
+  .scene {
+    margin: 12px;
+  }
+}
+
 .cube {
   position: relative;
   transform-style: preserve-3d;
