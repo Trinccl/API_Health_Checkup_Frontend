@@ -109,12 +109,12 @@ function formatRequestJson() {
   >
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
-  <v-container fluid class="pa-4" v-else-if="isJwt">
+  <v-container fluid class="pa-4 page" v-else-if="isJwt">
     <v-btn size="small" color="primary" class="mb-3" :to="`/dashboard`">
       Return to dashboard
     </v-btn>
     <v-row cols="12" class="d-flex align-center justify-center">
-      <v-col md="8" class="border-thin rounded">
+      <v-col cols="12" md="10" lg="8" class="border-thin rounded">
         <v-form @submit.prevent="addAskHealthAPI" class="pa-3 w-100 mt-3">
           <v-text-field
             v-model="nameInput"
@@ -207,13 +207,13 @@ function formatRequestJson() {
           <p class="ms-2 mb-2">Request Headers (optional)</p>
           <HeadersEditor v-model="headerRows" class="mb-8" />
           <v-row cols="12">
-            <v-col md="6">
+            <v-col cols="12" md="6">
               <v-checkbox
                 v-model="sendOnSlow"
                 label="Send mail alert on Slow API status"
               ></v-checkbox
             ></v-col>
-            <v-col md="6">
+            <v-col cols="12" md="6">
               <v-checkbox
                 v-model="sendOnDown"
                 label="Send mail alert on Down API status"

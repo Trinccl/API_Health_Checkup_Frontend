@@ -52,13 +52,13 @@ const submitLogin = async () => {
           :appleMode="appleModeCheck"
           :width="widthVal"
         />
-        <h1 class="text-h4 md:text-headline-large pa-3 font-weight-bold text-center">
+        <h1 class="text-headline-small text-md-headline-medium font-weight-bold text-center pa-3">
           API Health Checkup
         </h1>
       </div>
-      <v-col md="6" class="border-thin rounded w-full md:w-25" style="flex: 0 0 auto">
+      <v-col md="6" class="border-thin rounded auth-card" style="flex: 0 0 auto">
         <div class="pa-4">
-          <h2 class="text-h4 md:text-headline-large pa-3">Login</h2>
+          <h2 class="text-headline-small text-md-headline-medium pa-3">Login</h2>
           <hr />
           <v-form @submit.prevent="submitLogin" class="pa-3 w-100 mt-3">
             <v-text-field

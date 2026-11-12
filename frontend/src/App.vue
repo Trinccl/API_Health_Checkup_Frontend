@@ -84,7 +84,7 @@ onMounted(checkif);
       </v-snackbar>
 
       <nav
-        class="d-flex justify-start align-center ma-3 border-b-thin flex-wrap gap-x-2 gap-y-1"
+        class="page d-flex justify-start align-center px-3 border-b-thin flex-wrap gc-2"
         v-if="$route.path != '/' && $route.path != '/register'"
       >
         <CubeLogo
@@ -99,7 +99,7 @@ onMounted(checkif);
           :appleMode="appleModeCheck"
           :width="widthVal"
         />
-        <h1 class="text-headline-xs md:text-headline-md lg:text-headline-large pa-2 md:pa-3 font-weight-bold">
+        <h1 class="text-title-large text-md-headline-small text-lg-headline-medium pa-2 font-weight-bold">
           <a href="/"> API Health Checkup </a>
         </h1>
 

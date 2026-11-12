@@ -220,7 +220,7 @@ onUnmounted(() => {
   >
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
-  <v-container fluid class="pa-4" v-else-if="isJwt">
+  <v-container fluid class="pa-4 page" v-else-if="isJwt">
     <v-btn size="small" color="primary" class="mb-3" :to="`/dashboard`">
       Return to dashboard
     </v-btn>
@@ -298,7 +298,7 @@ onUnmounted(() => {
             </p>
           </div>
         </div>
-        <div class="d-flex mt-3 flex-wrap gap-x-2 gap-y-1">
+        <div class="d-flex mt-3 flex-wrap ga-2">
           <v-btn
             color="primary"
             :to="`/dashboard/${route.params.id}/edit`"
@@ -338,7 +338,7 @@ onUnmounted(() => {
           )"
           :key="log.id"
         >
-          <div class="border-b-thin d-flex pa-2">
+          <div class="border-b-thin d-flex flex-wrap ga-2 pa-2">
             <p class="ms-3 flex-grow-1 font-weight-bold">
               Status:
               <b>{{ log.status }}</b>
@@ -348,7 +348,7 @@ onUnmounted(() => {
             </p>
           </div>
 
-          <div class="d-flex align-center mt-2 pa-2 flex-wrap gap-x-2 gap-y-1">
+          <div class="d-flex align-center mt-2 pa-2 flex-wrap ga-2">
             <p class="ms-3 flex-grow-1">Created At: {{ log.createdAt }}</p>
             <p v-if="log.error" class="me-3 text-break">{{ log.error }}</p>
             <v-btn

@@ -29,9 +29,9 @@ onMounted(async () => {
 <template>
   <v-container fluid class="d-flex flex-grow-1 pa-4">
     <v-row cols="12" class="d-flex align-center justify-center flex-column">
-      <v-col md="6" class="border-thin rounded w-full md:w-25" style="flex: 0 0 auto">
+      <v-col md="6" class="border-thin rounded auth-card" style="flex: 0 0 auto">
         <div class="pa-4">
-          <h2 class="text-h4 md:text-headline-large pa-3">Email confirmation</h2>
+          <h2 class="text-headline-small text-md-headline-medium pa-3">Email confirmation</h2>
           <hr />
 
           <div v-if="status === 'loading'" class="d-flex justify-center pa-6">

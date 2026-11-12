@@ -100,51 +100,51 @@ onUnmounted(() => {
   >
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
-  <v-container fluid class="pa-4" v-else-if="isJwt">
-    <div class="d-flex justify-space-between align-center mb-3">
+  <v-container fluid class="pa-4 page" v-else-if="isJwt">
+    <div class="d-flex justify-space-between align-center flex-wrap ga-2 mb-3">
       <h1 class="text-headline-small font-weight-bold">Monitored APIs</h1>
       <v-btn color="primary" prepend-icon="mdi-plus" :to="`/dashboard/create`">
         Add API
       </v-btn>
     </div>
     <v-row cols="12">
-      <v-col md="2" class="px-4 mb-2" style="max-width: 360px">
+      <v-col cols="12" md="4" lg="3" class="mb-2">
         <ApiStatsDonut ref="statsRef" title="All APIs: check results" />
       </v-col>
-      <v-col class="pa-4" md="10">
+      <v-col cols="12" md="8" lg="9">
         <div
           class="border-thin rounded pa-4 d-flex flex-column justify-space-between mb-3"
           v-for="api in ApiData"
           :key="api.id"
         >
-          <div class="border-b-thin d-flex pa-2">
-            <p class="ms-3 flex-grow-1">
+          <div class="border-b-thin d-flex align-center flex-wrap ga-2 pa-2">
+            <p class="ms-3 flex-grow-1 text-break min-w-0">
               Name:
               <b>{{ api.name }}</b>
             </p>
-            <v-btn
-              size="small"
-              variant="outlined"
-              class="me-3"
-              :prepend-icon="isApiPaused(api) ? 'mdi-play' : 'mdi-pause'"
-              :loading="busyId === api.id"
-              :disabled="busyId !== null && busyId !== api.id"
-              @click="togglePause(api)"
-            >
-              {{ isApiPaused(api) ? "Resume" : "Pause" }}
-            </v-btn>
-            <v-btn
-              size="small"
-              color="primary"
-              class="me-3"
-              :to="`/dashboard/${api.id}`"
-            >
-              Details
-            </v-btn>
+            <div class="d-flex ga-2 me-3">
+              <v-btn
+                size="small"
+                variant="outlined"
+                :prepend-icon="isApiPaused(api) ? 'mdi-play' : 'mdi-pause'"
+                :loading="busyId === api.id"
+                :disabled="busyId !== null && busyId !== api.id"
+                @click="togglePause(api)"
+              >
+                {{ isApiPaused(api) ? "Resume" : "Pause" }}
+              </v-btn>
+              <v-btn
+                size="small"
+                color="primary"
+                :to="`/dashboard/${api.id}`"
+              >
+                Details
+              </v-btn>
+            </div>
           </div>
 
-          <div class="d-flex pa-2 mt-2">
-            <p class="ms-3 flex-grow-1 break-words">URL: {{ api.url }}</p>
+          <div class="d-flex flex-wrap ga-2 pa-2 mt-2">
+            <p class="ms-3 flex-grow-1 text-break min-w-0">URL: {{ api.url }}</p>
             <p class="me-3">Status: {{ api.status }}</p>
           </div>
         </div>
