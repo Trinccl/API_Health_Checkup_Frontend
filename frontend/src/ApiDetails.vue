@@ -220,7 +220,7 @@ onUnmounted(() => {
   >
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
-  <v-container fluid class="pa-4" v-else-if="isJwt">
+  <v-container fluid class="pa-4 page" v-else-if="isJwt">
     <v-btn size="small" color="primary" class="mb-3" :to="`/dashboard`">
       Return to dashboard
     </v-btn>
@@ -232,7 +232,7 @@ onUnmounted(() => {
           </div>
 
           <div class="d-flex align-center border-b-thin">
-            <p class="pa-3 flex-grow-1">Url: {{ ApiData?.url }}</p>
+            <p class="pa-3 flex-grow-1 text-break">Url: {{ ApiData?.url }}</p>
           </div>
 
           <div class="d-flex align-center border-b-thin">
@@ -301,16 +301,14 @@ onUnmounted(() => {
             </p>
           </div>
         </div>
-        <div class="d-flex mt-3">
+        <div class="d-flex mt-3 flex-wrap ga-2">
           <v-btn
             color="primary"
-            class="me-3"
             :to="`/dashboard/${route.params.id}/edit`"
           >
             Edit
           </v-btn>
           <v-btn
-            class="me-3"
             variant="outlined"
             :prepend-icon="isApiPaused(ApiData) ? 'mdi-play' : 'mdi-pause'"
             :loading="isToggling"
@@ -332,7 +330,7 @@ onUnmounted(() => {
           :categories="['responseTimeMs']"
           :config="chartConfig"
           :threshold="ApiData?.slowThresholdMs"
-          class="h-[300px] mb-4"
+          class="h-[260px] md:h-[300px] mb-4"
           v-if="LogsData?.items.length"
         />
         <div
@@ -343,7 +341,7 @@ onUnmounted(() => {
           )"
           :key="log.id"
         >
-          <div class="border-b-thin d-flex pa-2">
+          <div class="border-b-thin d-flex flex-wrap ga-2 pa-2">
             <p class="ms-3 flex-grow-1 font-weight-bold">
               Status:
               <b>{{ log.status }}</b>
@@ -353,13 +351,12 @@ onUnmounted(() => {
             </p>
           </div>
 
-          <div class="d-flex align-center mt-2 pa-2">
+          <div class="d-flex align-center mt-2 pa-2 flex-wrap ga-2">
             <p class="ms-3 flex-grow-1">Created At: {{ log.createdAt }}</p>
-            <p v-if="log.error" class="me-3">{{ log.error }}</p>
+            <p v-if="log.error" class="me-3 text-break">{{ log.error }}</p>
             <v-btn
               size="small"
               variant="tonal"
-              class="me-3"
               prepend-icon="mdi-eye-outline"
               @click="openLog(log.id)"
             >

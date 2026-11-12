@@ -112,7 +112,7 @@ onMounted(checkif);
   >
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
-  <v-container fluid class="pa-4" v-else-if="isJwt">
+  <v-container fluid class="pa-4 page" v-else-if="isJwt">
     <v-btn
       size="small"
       color="primary"
@@ -122,19 +122,19 @@ onMounted(checkif);
       Return to details
     </v-btn>
     <v-row cols="12" class="d-flex align-center justify-center">
-      <v-col md="8">
+      <v-col cols="12" md="10" lg="9">
         <v-form @submit.prevent="submitPatch" class="mb-[40px]">
-          <div class="border-thin rounded">
+          <div class="border-thin rounded field-card">
             <div class="d-flex align-center border-b-thin font-weight-bold">
               <p class="pa-3 flex-grow-1">Name: {{ ApiData?.name }}</p>
             </div>
 
             <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 flex-grow-1">Url: {{ ApiData?.url }}</p>
+              <p class="pa-3 flex-grow-1 text-break">Url: {{ ApiData?.url }}</p>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="field-row border-b-thin">
+              <p class="field-label pa-3">
                 Slow API Threshold: {{ ApiData?.slowThresholdMs }}ms
               </p>
               <v-text-field
@@ -145,7 +145,7 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="inline-field w-50 px-3"
+                class="field-input px-3"
               ></v-text-field>
             </div>
 
@@ -164,7 +164,7 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="inline-field w-50 px-3"
+                class="field-input px-3"
               ></v-text-field>
             </div>
 
@@ -174,8 +174,8 @@ onMounted(checkif);
               </p>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="field-row border-b-thin">
+              <p class="field-label pa-3">
                 Interval between health checks:
                 {{ ApiData?.intervalMinutes }} minutes
               </p>
@@ -187,19 +187,19 @@ onMounted(checkif);
                 density="compact"
                 single-line
                 hide-details
-                class="inline-field w-50 px-3"
+                class="field-input px-3"
               />
             </div>
 
             <div
-              class="d-flex align-center border-b-thin"
+              class="field-row border-b-thin"
               v-if="!['GET', 'HEAD'].includes(ApiData?.requestMethod)"
             >
-              <p class="pa-3 w-50 border-e-thin">
+              <p class="field-label pa-3">
                 Request body:
                 <FormatterWithPre :value="ApiData?.requestBody" />
               </p>
-              <div class="inline-field w-50 pa-3">
+              <div class="field-input pa-3">
                 <JsonTextArea
                   v-model="reqBodyInput"
                   label="New request body:"
@@ -209,14 +209,14 @@ onMounted(checkif);
               </div>
             </div>
             <div
-              class="d-flex align-center border-b-thin"
+              class="field-row border-b-thin"
               v-if="ApiData?.requestMethod != 'HEAD'"
             >
-              <p class="pa-3 w-50 border-e-thin">
+              <p class="field-label pa-3">
                 Expected body:
                 <FormatterWithPre :value="ApiData?.expectedBody" />
               </p>
-              <div class="inline-field w-50 pa-3">
+              <div class="field-input pa-3">
                 <JsonTextArea
                   v-model="expectedBodyInput"
                   label="New expected body"
@@ -231,8 +231,8 @@ onMounted(checkif);
               <HeadersEditor v-model="headerRows" />
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="field-row border-b-thin">
+              <p class="field-label pa-3">
                 Send alert on Slow: {{ ApiData?.alertOnSlow ? "Yes" : "No" }}
               </p>
               <v-checkbox
@@ -240,12 +240,12 @@ onMounted(checkif);
                 label="Send mail alert on Slow API status"
                 density="compact"
                 hide-details
-                class="inline-checkbox w-50 px-3"
+                class="field-input px-3"
               ></v-checkbox>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
-              <p class="pa-3 w-50 border-e-thin">
+            <div class="field-row border-b-thin">
+              <p class="field-label pa-3">
                 Send alert on Down: {{ ApiData?.alertOnDown ? "Yes" : "No" }}
               </p>
               <v-checkbox
@@ -253,7 +253,7 @@ onMounted(checkif);
                 label="Send mail alert on Down API status"
                 density="compact"
                 hide-details
-                class="inline-checkbox w-50 px-3"
+                class="field-input px-3"
               ></v-checkbox>
             </div>
           </div>

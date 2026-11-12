@@ -85,7 +85,7 @@ onMounted(checkif);
       </v-snackbar>
 
       <nav
-        class="d-flex justify-start align-center ma-3 border-b-thin"
+        class="page d-flex justify-start align-center px-3 border-b-thin flex-wrap gc-2"
         v-if="$route.path != '/' && $route.path != '/register'"
       >
         <CubeLogo
@@ -100,25 +100,20 @@ onMounted(checkif);
           :appleMode="appleModeCheck"
           :width="widthVal"
         />
-        <h1 class="text-headline-large pa-3 font-weight-bold">
+        <h1
+          class="text-title-large text-md-headline-small text-lg-headline-medium pa-2 font-weight-bold"
+        >
           <a href="/"> API Health Checkup </a>
         </h1>
 
         <v-spacer />
 
-        <v-btn
-          color="primary"
-          variant="text"
-          class="mr-3"
-          :to="`/dashboard`"
-          v-if="isJwt"
-        >
+        <v-btn color="primary" variant="text" :to="`/dashboard`" v-if="isJwt">
           Dashboard
         </v-btn>
         <v-btn
           color="primary"
           variant="text"
-          class="mr-3"
           :to="`/dashboard/create`"
           v-if="isJwt"
         >

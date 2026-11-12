@@ -124,3 +124,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Responsive layout helpers.                                          */
+/* Plain CSS on purpose: Tailwind and Vuetify both define utilities    */
+/* like w-50, but with different meanings (200px vs 50%), so we do not */
+/* use breakpoint-prefixed width utilities for layout.                 */
+/* ------------------------------------------------------------------ */
+:root {
+  --page-max: 1320px;
+  --form-max: 960px;
+}
+
+/* Centered content column; keeps pages from stretching on wide screens. */
+.page {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+.page-form {
+  max-width: var(--form-max);
+}
+
+/* Login / register / verify card. */
+.auth-card {
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* "Label | input" rows used on the edit page.
+   Stacked on narrow containers, side by side (50/50) when there is room. */
+.field-card {
+  container-type: inline-size;
+}
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.field-row > .field-label,
+.field-row > .field-input {
+  flex: 1 1 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@container (min-width: 36rem) {
+  .field-row > .field-label {
+    flex: 0 0 50%;
+    border-inline-end: thin solid
+      rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+  .field-row > .field-input {
+    flex: 1 1 0;
+  }
+}
