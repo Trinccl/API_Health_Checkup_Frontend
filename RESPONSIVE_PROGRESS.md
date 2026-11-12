@@ -23,7 +23,7 @@ Make every screen usable from ~320px up to desktop. No horizontal overflow, no c
 - [x] ApiEdit.vue — inline label+input rows: `flex-wrap`, label/inputs `w-100 md:w-50` (full-width below label on mobile, side-by-side on desktop); `text-break` on URL
 - [x] LoginPage.vue / RegisterPage.vue / VerifyEmail.vue — form card `w-25` → `w-full md:w-25`; headings `text-headline-large` → `text-h4 md:text-headline-large`
 - [x] Final full build passes (after all template changes)
-- [ ] Final commit
+- [x] Final commit — `0fb7df4`
 
 ## Change log
 
