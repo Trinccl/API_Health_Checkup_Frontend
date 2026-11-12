@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 
-export const BASE_URL = "http://localhost:3000";
+export const BASE_URL = "https://apihub.kapitanat.pl/backend";
 const TOKEN_KEY = "JWT";
 
 const jwt = ref(localStorage.getItem(TOKEN_KEY));
