@@ -49,6 +49,8 @@ async function loadApi() {
     sendOnDown.value = data.alertOnDown;
     sendOnSlow.value = data.alertOnSlow;
     headerRows.value = headersToRows(data.requestHeaders);
+    reqBodyInput.value = ApiData.value.requestBody;
+    expectedBodyInput.value = ApiData.value.expectedBody;
   } catch (error) {
     notify("Error: " + error.message, "error", "mdi-cancel");
   }
@@ -66,8 +68,8 @@ async function submitPatch() {
         intervalMinutesInput.value || ApiData.value.intervalMinutes,
       alertOnDown: sendOnDown.value,
       alertOnSlow: sendOnSlow.value,
-      requestBody: reqBodyInput.value || ApiData.value.requestBody,
-      expectedBody: expectedBodyInput.value || ApiData.value.expectedBody,
+      requestBody: reqBodyInput.value,
+      expectedBody: expectedBodyInput.value,
       requestHeaders: rowsToHeaders(headerRows.value),
     });
     notify("Successfully modified data!", "success", "$success");
@@ -147,7 +149,10 @@ onMounted(checkif);
               ></v-text-field>
             </div>
 
-            <div class="d-flex align-center border-b-thin">
+            <div
+              class="d-flex align-center border-b-thin"
+              v-if="sendOnSlow || sendOnDown"
+            >
               <p class="pa-3 w-50 border-e-thin">
                 Errors in a row until alert: {{ ApiData?.errorsToAlert }}
               </p>

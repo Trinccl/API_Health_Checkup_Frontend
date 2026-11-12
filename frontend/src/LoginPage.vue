@@ -29,8 +29,9 @@ const submitLogin = async () => {
     notify("Successfully logged in", "success", "$success");
     router.push("/dashboard");
   } catch (error) {
-    // 403 = right password, but the email isn't confirmed yet
-    if (error.status === 403) needsVerification.value = true;
+    if (error.status === 403) {
+      needsVerification.value = true;
+    }
     notify("Error: " + error.message, "error", "mdi-cancel");
   }
 };

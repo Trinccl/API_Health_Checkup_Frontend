@@ -7,6 +7,7 @@ import { isLoggedIn, logout, checkToken } from "./api.js";
 const router = useRouter();
 const route = useRoute();
 
+const confirmDelete = ref(false);
 const topmessage = ref("API");
 const bottommessage = ref("HP");
 const xSpeed = ref(1);
@@ -123,15 +124,32 @@ onMounted(checkif);
         >
           Add API
         </v-btn>
-        <v-btn
-          v-if="isJwt"
-          variant="text"
-          prepend-icon="mdi-logout"
-          class="mr-3"
-          @click="handleLogout"
-        >
-          Logout
-        </v-btn>
+        <v-menu open-on-hover v-if="isJwt">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props"> ... </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item
+              v-if="isJwt"
+              variant="text"
+              prepend-icon="mdi-logout"
+              @click="handleLogout"
+              class="ms-2 me-2"
+            >
+              Logout
+            </v-list-item>
+            <v-list-item
+              v-if="isJwt"
+              variant="text"
+              prepend-icon="mdi-account-remove"
+              @click="confirmDelete = true"
+              class="ms-2 me-2"
+            >
+              Delete user
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </nav>
       <RouterView class="flex-grow-1" />
       <footer
@@ -139,6 +157,26 @@ onMounted(checkif);
       >
         Api health check app made by Adam and Tomek
       </footer>
+
+      <v-dialog v-model="confirmDelete" max-width="400">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <span class="flex-grow-1">Confirm account deletion?</span>
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              size="small"
+              aria-label="Close"
+              @click="confirmDelete = false"
+            />
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="d-flex w-100">
+            <v-btn>Yes</v-btn>
+            <v-btn>No</v-btn>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-main>
   </v-app>
 </template>

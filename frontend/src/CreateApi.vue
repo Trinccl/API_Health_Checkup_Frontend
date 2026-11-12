@@ -164,6 +164,7 @@ function formatRequestJson() {
             variant="outlined"
             density="comfortable"
             class="mb-2"
+            :disabled="!sendOnSlow && !sendOnDown"
           ></v-text-field>
 
           <div class="mb-8">

@@ -4,13 +4,11 @@ import { resendVerification } from "../api.js";
 
 const props = defineProps({
   email: { type: String, required: true },
-  // true right after signing up: an email was just sent, so start on cooldown
   startCooldown: { type: Boolean, default: false },
 });
 
 const notify = inject("notify");
 
-// the backend ignores resend requests for 60s after the last email
 const COOLDOWN_SECONDS = 60;
 const secondsLeft = ref(0);
 const isSending = ref(false);
@@ -42,9 +40,6 @@ async function resend() {
   }
 }
 
-onMounted(() => {
-  if (props.startCooldown) runCooldown();
-});
 onUnmounted(() => clearInterval(timer));
 </script>
 

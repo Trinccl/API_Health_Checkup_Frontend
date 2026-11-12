@@ -119,7 +119,7 @@ const submitReg = async () => {
               We sent a confirmation link to {{ sentTo }}. Open it to activate
               your account. It expires in 24 hours.
             </p>
-            <ResendVerification :email="sentTo" start-cooldown />
+            <ResendVerification :email="sentTo" />
           </div>
           <p class="pa-3">
             Already have an account?

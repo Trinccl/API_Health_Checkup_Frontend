@@ -241,7 +241,10 @@ onUnmounted(() => {
             </p>
           </div>
 
-          <div class="d-flex align-center border-b-thin">
+          <div
+            class="d-flex align-center border-b-thin"
+            v-if="ApiData?.alertOnDown || ApiData?.alertOnSlow"
+          >
             <p class="pa-3 flex-grow-1">
               Errors in a row until alert: {{ ApiData?.errorsToAlert }}
             </p>
