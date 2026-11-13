@@ -1,6 +1,6 @@
 <script setup>
 import router from "./router.js";
-import { onMounted, ref, inject, computed } from "vue";
+import { onMounted, ref, inject, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import HeadersEditor from "@/components/HeadersEditor.vue";
 import {
