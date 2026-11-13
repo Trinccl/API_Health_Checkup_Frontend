@@ -101,6 +101,18 @@ function formatRequestJson() {
   } catch {}
 }
 
+const isErrorsToAlerts = computed(() => {
+  if (sendOnDown.value || sendOnSlow.value) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+watch(isErrorsToAlerts, (enabled) => {
+  if (!enabled) errorThresholdInput.value = "";
+});
+
 onMounted(checkif);
 </script>
 
@@ -153,7 +165,7 @@ onMounted(checkif);
 
             <div
               class="d-flex align-center border-b-thin"
-              v-if="sendOnSlow || sendOnDown"
+              v-if="isErrorsToAlerts"
             >
               <p class="pa-3 w-50 border-e-thin">
                 Errors in a row until alert: {{ ApiData?.errorsToAlert }}

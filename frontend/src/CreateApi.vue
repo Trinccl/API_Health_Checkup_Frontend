@@ -50,6 +50,18 @@ async function checkif() {
   }
 }
 
+const isErrorsToAlerts = computed(() => {
+  if (sendOnDown.value || sendOnSlow.value) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+watch(isErrorsToAlerts, (enabled) => {
+  if (!enabled) errorThresholdInput.value = "";
+});
+
 const addAskHealthAPI = async () => {
   isSubmitting.value = true;
   try {
@@ -164,7 +176,7 @@ function formatRequestJson() {
             variant="outlined"
             density="comfortable"
             class="mb-2"
-            :disabled="!sendOnSlow && !sendOnDown"
+            :disabled="!isErrorsToAlerts"
           ></v-text-field>
 
           <div class="mb-8">
