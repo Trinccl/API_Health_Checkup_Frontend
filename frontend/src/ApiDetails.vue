@@ -302,10 +302,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="d-flex mt-3 flex-wrap ga-2">
-          <v-btn
-            color="primary"
-            :to="`/dashboard/${route.params.id}/edit`"
-          >
+          <v-btn color="primary" :to="`/dashboard/${route.params.id}/edit`">
             Edit
           </v-btn>
           <v-btn
@@ -358,6 +355,7 @@ onUnmounted(() => {
               size="small"
               variant="tonal"
               prepend-icon="mdi-eye-outline"
+              class="ms-auto me-3"
               @click="openLog(log.id)"
             >
               Details
